@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This is a Key-value Distributed Storage System. Most of the concepts are inspired by Amazon's DynamoDB [\[2\]](#References). Included features: Consistent Hashing, Data Versioning, Synchronized Divergent Replicas, Membership, and Failure Detection/Handling. The system contains with one frontend services to handle requests/responses, and several backend services to store data.
+This is a Key-value Distributed Storage System. Most of the concepts are inspired by Amazon's DynamoDB [\[2\]](#references). Included features: Consistent Hashing, Data Versioning, Synchronized Divergent Replicas, Membership, and Failure Detection/Handling. The system contains with one frontend services to handle requests/responses, and several backend services to store data.
 
 ## Features
 
@@ -40,5 +40,5 @@ When a backend is unreachable, the frontend will send the data to the next backe
 * Demonstration before Wednesday **5/16/18**
 
 ## References
-\[1\] [University of San Francisco](https://www.usfca.edu/)
-\[2\] [Dynamo](http://s3.amazonaws.com/AllThingsDistributed/sosp/amazon-dynamo-sosp2007.pdf)
+* \[1\] [University of San Francisco](https://www.usfca.edu/)
+* \[2\] [Dynamo](http://s3.amazonaws.com/AllThingsDistributed/sosp/amazon-dynamo-sosp2007.pdf)
