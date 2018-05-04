@@ -1,17 +1,15 @@
-package Backend;
+package Frontend;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-import java.util.Hashtable;
-
 @SpringBootApplication
 public class Driver {
 
-    static Hashtable<String, Data> data;
+    static States State;
 
     public static void main(String[] args) {
-        Driver.data = new Hashtable<>();
+        Driver.State = States.PREPARING;
 
         SpringApplication.run(Driver.class, args);
     }

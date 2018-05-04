@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>cs682</groupId>
-    <artifactId>Backend</artifactId>
+    <artifactId>Frontend</artifactId>
     <version>1.0-SNAPSHOT</version>
 
     <parent>
@@ -47,5 +47,5 @@
             <url>https://repo.spring.io/libs-release</url>
         </pluginRepository>
     </pluginRepositories>
-    
+
 </project>
