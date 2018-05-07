@@ -6,10 +6,15 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class Driver {
 
-    static States State;
+    static final int MAX = 8;
+    static boolean alive = true;
+    static Ring ring;
 
     public static void main(String[] args) {
-        Driver.State = States.PREPARING;
+        Driver.ring = new Ring(8);
+
+        Thread gossip = new Thread(new Gossip());
+        gossip.start();
 
         SpringApplication.run(Driver.class, args);
     }
