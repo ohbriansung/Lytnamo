@@ -32,4 +32,10 @@ public class GossipController {
             return null;
         }
     }
+
+    @RequestMapping(value = "/gossip", method = RequestMethod.GET)
+    public String goddip() {
+        JsonObject myMembership = Driver.ring.getMembership();
+        return myMembership.toString();
+    }
 }

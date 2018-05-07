@@ -32,4 +32,13 @@ public class MembershipController {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
         }
     }
+
+    @RequestMapping(value = "/seeds", method = RequestMethod.GET)
+    public String getMembership() {
+        JsonObject responseBody = new JsonObject();
+        responseBody.addProperty("capacity", Driver.ring.getMaximumNumberOfReplicas());
+        responseBody.add("seeds", Driver.ring.getSeeds());
+
+        return responseBody.toString();
+    }
 }

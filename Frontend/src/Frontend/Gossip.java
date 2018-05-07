@@ -1,58 +1,47 @@
 package Frontend;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
+
 import java.io.IOException;
 import java.net.HttpURLConnection;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Arrays;
 
-public class Gossip implements Runnable {
+public class Gossip extends HttpRequest implements Runnable {
 
     @Override
     public void run() {
         while (Driver.alive) {
-            List<Thread> currentTasks = new ArrayList<>();
-            String[] replicas = Driver.ring.getReplicas();
+            String peerAddress = Driver.ring.getOnePeer();
 
-            for (int i = 0; i < Driver.MAX; i++) {
-                if (replicas[i] != null) {
-                    Thread newTask = new Thread(new SendGossip(i, replicas[i]));
-                    currentTasks.add(newTask);
-                    newTask.start();
+            if (peerAddress != null) {
+                String url = peerAddress + "/gossip";
+
+                try {
+                    HttpURLConnection connection = doGetRequest(url);
+                    JsonObject response = parseResponse(connection).getAsJsonObject();
+
+                    if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
+                        Driver.ring.updateMembership(response);
+                    } else {
+                        throw new IOException();
+                    }
+
+                    // TODO: delete before deploy >>>
+                    System.out.println("Gossip at" + System.currentTimeMillis());
+                    System.out.println(Arrays.toString(Driver.ring.getReplica()));
+                    // TODO: delete before deploy <<<
+                } catch (JsonParseException ignored) {
+
+                } catch (IOException ignored) {
+                    // TODO: remove node
                 }
             }
 
             try {
-                for (Thread task : currentTasks) {
-                    task.join();
-                }
-
-                Thread.sleep(500);
+                Thread.sleep(1000);
             } catch (InterruptedException ie) {
                 ie.printStackTrace();
-            }
-        }
-    }
-
-    private class SendGossip extends HttpRequest implements Runnable {
-        private int key;
-        private String address;
-
-        private SendGossip(int key, String address) {
-            this.key = key;
-            this.address = address;
-        }
-
-        @Override
-        public void run() {
-            try {
-                HttpURLConnection connection = doGetRequest(this.address);
-
-                if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
-                    throw new IOException();
-                }
-            } catch (IOException ignored) {
-                Driver.ring.remove(this.key);
-                System.out.println("[Gossip] Removed " + this.address + " from the ring.");
             }
         }
     }
