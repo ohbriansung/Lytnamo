@@ -12,10 +12,10 @@ public class Gossip extends HttpRequest implements Runnable {
     @Override
     public void run() {
         while (Driver.alive) {
-            String peerAddress = Driver.ring.getOnePeer();
+            String[] peerInfo = Driver.ring.getOnePeer();
 
-            if (peerAddress != null) {
-                String url = peerAddress + "/gossip";
+            if (peerInfo[1] != null) {
+                String url = peerInfo[1] + "/gossip";
                 JsonObject requestBody = Driver.ring.getMembership();
 
                 try {
@@ -35,7 +35,7 @@ public class Gossip extends HttpRequest implements Runnable {
                 } catch (JsonParseException ignored) {
 
                 } catch (IOException ignored) {
-                    // TODO: remove node
+                    Driver.ring.remove(peerInfo[0]);
                 }
             }
 

@@ -62,7 +62,7 @@ public class Driver {
         }
 
         // TODO: remove before deploy >>>
-        System.setProperty("server.port", "8888");
+        System.setProperty("server.port", "6666");
         Driver.replica.setSeed(false);
         Driver.coordinator = "localhost:8080";
         // TODO: remove before deploy <<<

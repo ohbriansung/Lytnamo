@@ -36,23 +36,6 @@ public class Ring {
         }
     }
 
-    public boolean remove(Replica replica) {
-        boolean result = false;
-
-        this.lock.writeLock().lock();
-
-        int key = replica.getKey();
-        String id = replica.getId();
-        if (this.replicas[key] != null && this.replicas[key].getId().equals(id)) {
-            this.replicas[key] = null;
-            result = true;
-        }
-
-        this.lock.writeLock().unlock();
-
-        return result;
-    }
-
     public void updateMembership(JsonObject membership) {
         Set<String> inAddLog = parseLog(membership.get("add").getAsJsonArray());
         Set<String> inDeleteLog = parseLog(membership.get("delete").getAsJsonArray());
@@ -110,8 +93,8 @@ public class Ring {
         }
     }
 
-    public String getOnePeer() {
-        String address = null;
+    public String[] getOnePeer() {
+        String[] info = new String[2];
 
         this.lock.readLock().lock();
 
@@ -125,12 +108,13 @@ public class Ring {
             String id = currentReplicas.get(target);
             int key = this.addLog.get(id);
             Replica peer = this.replicas[key];
-            address = peer.getHost() + ":" + peer.getPort();
+            info[0] = id;
+            info[1] = peer.getHost() + ":" + peer.getPort();
         }
 
         this.lock.readLock().unlock();
 
-        return address;
+        return info;
     }
 
     public Replica[] getReplica() {
@@ -139,5 +123,15 @@ public class Ring {
         this.lock.readLock().unlock();
 
         return replicas;
+    }
+
+    public void remove(String id) {
+        this.lock.writeLock().lock();
+
+        int key = this.addLog.get(id);
+        this.replicas[key] = null;
+        this.deleteLog.add(id);
+
+        this.lock.writeLock().unlock();
     }
 }

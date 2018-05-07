@@ -41,23 +41,6 @@ public class Ring {
         }
     }
 
-    public boolean remove(Replica replica) {
-        boolean result = false;
-
-        this.lock.writeLock().lock();
-
-        int key = replica.getKey();
-        String id = replica.getId();
-        if (this.replicas[key] != null && this.replicas[key].getId().equals(id)) {
-            this.replicas[key] = null;
-            result = true;
-        }
-
-        this.lock.writeLock().unlock();
-
-        return result;
-    }
-
     public JsonObject getMembership() {
         JsonObject membership = new JsonObject();
 
@@ -96,7 +79,9 @@ public class Ring {
         JsonObject replicas = new JsonObject();
 
         for (String id : this.addLog.keySet()) {
-            replicas.add(id, this.replicas[this.addLog.get(id)].toJson());
+            if (!this.deleteLog.contains(id)) {
+                replicas.add(id, this.replicas[this.addLog.get(id)].toJson());
+            }
         }
 
         return replicas;
@@ -151,16 +136,15 @@ public class Ring {
 
         for (String deleteId : inDeleteLog) {
             if (this.addLog.containsKey(deleteId)) {
-                int key = this.addLog.get(deleteId);
-                this.replicas[key] = null;
+                remove(deleteId);
+            } else {
+                this.deleteLog.add(deleteId);
             }
-
-            this.deleteLog.add(deleteId);
         }
     }
 
-    public String getOnePeer() {
-        String address = null;
+    public String[] getOnePeer() {
+        String[] info = new String[2];
 
         this.lock.readLock().lock();
 
@@ -178,12 +162,13 @@ public class Ring {
 
             int key = this.addLog.get(id);
             Replica peer = this.replicas[key];
-            address = peer.getHost() + ":" + peer.getPort();
+            info[0] = id;
+            info[1] = peer.getHost() + ":" + peer.getPort();
         }
 
         this.lock.readLock().unlock();
 
-        return address;
+        return info;
     }
 
     public Replica[] getReplica() {
@@ -192,5 +177,15 @@ public class Ring {
         this.lock.readLock().unlock();
 
         return replicas;
+    }
+
+    public void remove(String id) {
+        this.lock.writeLock().lock();
+
+        int key = this.addLog.get(id);
+        this.replicas[key] = null;
+        this.deleteLog.add(id);
+
+        this.lock.writeLock().unlock();
     }
 }

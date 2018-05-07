@@ -17,6 +17,7 @@ abstract class HttpRequest {
     private HttpURLConnection initConnection(String address) throws IOException {
         URL url = new URL("http://" + address);
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setReadTimeout(5000);
         connection.setConnectTimeout(5000);
 
         return connection;
