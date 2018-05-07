@@ -24,6 +24,10 @@ public class Ring {
         this.currentNumberOfReplicas = 0;
     }
 
+    public int getMaximumNumberOfReplicas() {
+        return this.maximumNumberOfReplicas;
+    }
+
     public int add(Replica replica) {
         int key = -1;
 
@@ -71,16 +75,6 @@ public class Ring {
         this.lock.readLock().unlock();
 
         return seeds;
-    }
-
-    public Replica[] getReplicas() {
-        Replica[] replicas;
-
-        this.lock.readLock().lock();
-        replicas = this.replicas.clone();
-        this.lock.readLock().unlock();
-
-        return replicas;
     }
 
     private int assignKey() {

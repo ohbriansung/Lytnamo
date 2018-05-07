@@ -14,8 +14,8 @@ public class MembershipController {
         JsonObject responseBody = new JsonObject();
 
         if (key != -1) {
-            response.setStatus(HttpServletResponse.SC_OK);
             responseBody.addProperty("key", key);
+            responseBody.addProperty("capacity", Driver.ring.getMaximumNumberOfReplicas());
             responseBody.add("seeds", Driver.ring.getSeeds());
         } else {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -28,9 +28,7 @@ public class MembershipController {
     public void deregister(@RequestBody Replica replica, HttpServletResponse response) {
         boolean success = Driver.ring.remove(replica);
 
-        if (success) {
-            response.setStatus(HttpServletResponse.SC_OK);
-        } else {
+        if (!success) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
         }
     }

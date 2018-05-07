@@ -11,7 +11,9 @@ import java.util.UUID;
 public class Driver {
 
     static final Replica replica = new Replica();
+    static Ring ring;
     static String coordinator;
+    static boolean alive = true;
     static Hashtable<String, Data> data;
 
     public static void main(String[] args) {
@@ -24,10 +26,14 @@ public class Driver {
             // start listing
             SpringApplication.run(Driver.class);
 
-            // register into ring
-            new Register().startRegister();
+            // join the membership
+            new Starter().registerAndInitializeRing();
+
+            // start gossip process in background
+            new Thread(new Gossip()).start();
         } catch (Exception e) {
             e.printStackTrace();
+            Driver.alive = false;
             System.exit(-1);
         }
     }
@@ -56,8 +62,8 @@ public class Driver {
         }
 
         // TODO: remove before deploy >>>
-        System.setProperty("server.port", "3333");
-        Driver.replica.setSeed(true);
+        System.setProperty("server.port", "6666");
+        Driver.replica.setSeed(false);
         Driver.coordinator = "localhost:8080";
         // TODO: remove before deploy <<<
 
