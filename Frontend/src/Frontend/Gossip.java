@@ -26,11 +26,6 @@ public class Gossip extends HttpRequest implements Runnable {
                     } else {
                         throw new IOException();
                     }
-
-                    // TODO: delete before deploy >>>
-                    System.out.println("Gossip at" + System.currentTimeMillis());
-                    System.out.println(Arrays.toString(Driver.ring.getReplica()));
-                    // TODO: delete before deploy <<<
                 } catch (JsonParseException ignored) {
 
                 } catch (IOException ignored) {

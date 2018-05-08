@@ -4,21 +4,18 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import java.net.InetAddress;
-import java.util.Hashtable;
 import java.util.UUID;
 
 @SpringBootApplication
 public class Driver {
 
     static final Replica replica = new Replica();
+    static final DataStorage dataStorage = new DataStorage();
     static Ring ring;
     static String coordinator;
     static boolean alive = true;
-    static Hashtable<String, Data> data;
 
     public static void main(String[] args) {
-        Driver.data = new Hashtable<>();
-
         try {
             // initialize property
             initialize(args);
@@ -63,7 +60,7 @@ public class Driver {
 
         // TODO: remove before deploy >>>
         System.setProperty("server.port", "6666");
-        Driver.replica.setSeed(false);
+        Driver.replica.setSeed(true);
         Driver.coordinator = "localhost:8080";
         // TODO: remove before deploy <<<
 

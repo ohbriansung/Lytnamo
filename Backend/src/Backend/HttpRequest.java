@@ -44,7 +44,7 @@ abstract class HttpRequest {
         return connection;
     }
 
-    private JsonElement parseJson(String body) throws JsonParseException {
+    JsonElement parseJson(String body) throws JsonParseException {
         JsonParser parser = new JsonParser();
         return parser.parse(body);
     }

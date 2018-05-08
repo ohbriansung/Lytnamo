@@ -9,12 +9,14 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 public class Ring {
 
     private final ReentrantReadWriteLock lock;
+    private final int maximumNumberOfReplicas;
     private final Replica[] replicas;
     private final Map<String, Integer> addLog;
     private final Set<String> deleteLog;
 
     public Ring(int maximumNumberOfReplicas) {
         this.lock = new ReentrantReadWriteLock();
+        this.maximumNumberOfReplicas = maximumNumberOfReplicas;
         this.replicas = new Replica[maximumNumberOfReplicas];
         this.addLog = new HashMap<>();
         this.deleteLog = new HashSet<>();
@@ -33,6 +35,8 @@ public class Ring {
 
             this.replicas[replica.getKey()] = replica;
             this.addLog.put(replica.getId(), replica.getKey());
+            System.out.println("[Membership] Added node " + replica.getId() +
+                    " into ring at key: " + replica.getKey());
         }
     }
 
@@ -76,6 +80,8 @@ public class Ring {
 
                 this.replicas[newReplica.getKey()] = newReplica;
                 this.addLog.put(newReplica.getId(), newReplica.getKey());
+                System.out.println("[Membership] Added node " + newReplica.getId() +
+                        " into ring at key: " + newReplica.getKey());
             }
         }
     }
@@ -131,7 +137,34 @@ public class Ring {
         int key = this.addLog.get(id);
         this.replicas[key] = null;
         this.deleteLog.add(id);
+        System.out.println("[Membership] Removed node " + id +
+                " from ring at key: " + key);
 
         this.lock.writeLock().unlock();
+    }
+
+    public int getMaxNumOfReplicas() {
+        return this.maximumNumberOfReplicas;
+    }
+
+    public String[] findHostForKey(int key) {
+        String[] hostInfo = new String[2];
+
+        this.lock.readLock().lock();
+
+        for (int i = key, count = 0;
+             count < this.maximumNumberOfReplicas;
+             i = (i + 1) % this.maximumNumberOfReplicas, count++) {
+            if (this.replicas[i] != null) {
+                Replica replica = this.replicas[i];
+                hostInfo[0] = replica.getId();
+                hostInfo[1] = replica.getHost() + ":" + replica.getPort();
+                break;
+            }
+        }
+
+        this.lock.readLock().unlock();
+
+        return hostInfo;
     }
 }

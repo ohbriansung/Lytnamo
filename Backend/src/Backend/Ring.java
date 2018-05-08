@@ -9,12 +9,14 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 public class Ring {
 
     private final ReentrantReadWriteLock lock;
+    private final int maximumNumberOfReplicas;
     private final Replica[] replicas;
     private final Map<String, Integer> addLog;
     private final Set<String> deleteLog;
 
     public Ring(int maximumNumberOfReplicas) {
         this.lock = new ReentrantReadWriteLock();
+        this.maximumNumberOfReplicas = maximumNumberOfReplicas;
         this.replicas = new Replica[maximumNumberOfReplicas];
         this.addLog = new HashMap<>();
         this.deleteLog = new HashSet<>();
@@ -33,6 +35,8 @@ public class Ring {
 
             this.replicas[replica.getKey()] = replica;
             this.addLog.put(replica.getId(), replica.getKey());
+            System.out.println("[Membership] Added node " + replica.getId() +
+                    " into ring at key: " + replica.getKey());
         }
 
         if (this.replicas[me.getKey()] == null) {
@@ -127,6 +131,8 @@ public class Ring {
 
                 this.replicas[newReplica.getKey()] = newReplica;
                 this.addLog.put(newReplica.getId(), newReplica.getKey());
+                System.out.println("[Membership] Added node " + newReplica.getId() +
+                        " into ring at key: " + newReplica.getKey());
             }
         }
     }
@@ -185,7 +191,27 @@ public class Ring {
         int key = this.addLog.get(id);
         this.replicas[key] = null;
         this.deleteLog.add(id);
+        System.out.println("[Membership] Removed node " + id +
+                " from ring at key: " + key);
 
         this.lock.writeLock().unlock();
+    }
+
+    public int[] getMyKeys() {
+        int[] range = new int[2];
+
+        this.lock.readLock().lock();
+
+        int key = Driver.replica.getKey();
+        range[1] = key;
+
+        do {
+            key = (key - 1 < 0) ? (this.maximumNumberOfReplicas - 1) : (key - 1);
+        } while (this.replicas[key] == null);
+        range[0] = (key + 1) % this.maximumNumberOfReplicas;
+
+        this.lock.readLock().unlock();
+
+        return range;
     }
 }

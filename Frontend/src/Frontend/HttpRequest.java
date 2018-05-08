@@ -17,7 +17,7 @@ abstract class HttpRequest {
     private HttpURLConnection initConnection(String address) throws IOException {
         URL url = new URL("http://" + address);
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        connection.setConnectTimeout(5000);
+        connection.setReadTimeout(5000);
 
         return connection;
     }
@@ -43,7 +43,7 @@ abstract class HttpRequest {
         return connection;
     }
 
-    private JsonElement parseJson(String body) throws JsonParseException {
+    public JsonElement parseJson(String body) throws JsonParseException {
         JsonParser parser = new JsonParser();
         return parser.parse(body);
     }
