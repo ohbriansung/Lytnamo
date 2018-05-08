@@ -54,6 +54,12 @@ public class Driver {
             }
         }
 
+//        portInit = true;
+//        coordinatorInit = true;
+//        System.setProperty("server.port", "4444");
+//        Driver.replica.setSeed(false);
+//        Driver.coordinator = "10.1.16.234:8080";
+
         if (!portInit || !coordinatorInit) {
             throw new Exception("Usage: java -jar backend.jar -p <port> -s <seed_or_not> -c <coordinator_address>");
         }

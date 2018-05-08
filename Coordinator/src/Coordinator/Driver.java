@@ -41,8 +41,9 @@ public class Driver {
             Driver.ring = new Ring();
         }
 
+        String port = System.getProperty("server.port");
         System.out.println("[System] Running Coordinator on " +
                 InetAddress.getLocalHost().getHostAddress() +
-                ":" + System.getProperty("server.port"));
+                ":" + (port == null ? "8080" : port));
     }
 }

@@ -89,11 +89,10 @@ public class Ring {
 
         for (String deleteId : inDeleteLog) {
             if (this.addLog.containsKey(deleteId)) {
-                int key = this.addLog.get(deleteId);
-                this.replicas[key] = null;
+                remove(deleteId);
+            } else {
+                this.deleteLog.add(deleteId);
             }
-
-            this.deleteLog.add(deleteId);
         }
     }
 
@@ -106,7 +105,7 @@ public class Ring {
         addedReplicas.removeAll(this.deleteLog);
         List<String> currentReplicas = new ArrayList<>(addedReplicas);
 
-        if (currentReplicas.size() > 1) {
+        if (currentReplicas.size() >= 1) {
             Random random = new Random();
             int target = random.nextInt(currentReplicas.size());
             String id = currentReplicas.get(target);
@@ -119,14 +118,6 @@ public class Ring {
         this.lock.readLock().unlock();
 
         return info;
-    }
-
-    public Replica[] getReplica() {
-        this.lock.readLock().lock();
-        Replica[] replicas = this.replicas.clone();
-        this.lock.readLock().unlock();
-
-        return replicas;
     }
 
     public void remove(String id) {
