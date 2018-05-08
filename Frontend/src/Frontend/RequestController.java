@@ -13,6 +13,8 @@ public class RequestController extends HttpRequest {
 
     @RequestMapping(value = "/get/{key}", method = RequestMethod.GET, produces = "application/json")
     public String get(@PathVariable String key, HttpServletResponse response) {
+        System.out.println("[Request] GET key = " + key);
+
         int hashKey = getHashKey(key);
         String[] hostInfo = Driver.ring.findHostForKey(hashKey);
 
@@ -41,6 +43,9 @@ public class RequestController extends HttpRequest {
 
     @RequestMapping(value = "/put/{key}", method = RequestMethod.POST, produces = "application/json")
     public void put(@PathVariable String key, @RequestBody String requestBody, HttpServletResponse response) {
+        System.out.println("[Request] POST key = " + key + ", requestBody = " +
+                requestBody.replaceAll(System.lineSeparator(), "").replaceAll("\t", ""));
+
         int hashKey = getHashKey(key);
         String[] hostInfo = Driver.ring.findHostForKey(hashKey);
         JsonObject body;

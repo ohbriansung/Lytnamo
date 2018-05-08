@@ -29,7 +29,7 @@ public class Gossip extends HttpRequest implements Runnable {
                 } catch (JsonParseException ignored) {
 
                 } catch (IOException ignored) {
-                    Driver.ring.remove(peerInfo[0]);
+                    remove(peerInfo[0]);
                 }
             }
 
@@ -39,5 +39,16 @@ public class Gossip extends HttpRequest implements Runnable {
                 ie.printStackTrace();
             }
         }
+    }
+
+    private void remove(String id) {
+        Replica toBeRemoved = Driver.ring.getReplica(id);
+        Driver.ring.remove(id);
+
+        try {
+            String url = Driver.coordinator + "/deregister";
+            HttpURLConnection connection = doPostRequest(url, toBeRemoved.toJson());
+            connection.getResponseCode();
+        } catch (IOException ignored) {}
     }
 }

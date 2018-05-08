@@ -35,13 +35,13 @@ public class Ring {
 
             this.replicas[replica.getKey()] = replica;
             this.addLog.put(replica.getId(), replica.getKey());
-            System.out.println("[Membership] Added node " + replica.getId() +
-                    " into ring at key: " + replica.getKey());
+            printAddInfo(replica);
         }
 
         if (this.replicas[me.getKey()] == null) {
             this.replicas[me.getKey()] = me;
             this.addLog.put(me.getId(), me.getKey());
+            printAddInfo(me);
         }
     }
 
@@ -131,8 +131,7 @@ public class Ring {
 
                 this.replicas[newReplica.getKey()] = newReplica;
                 this.addLog.put(newReplica.getId(), newReplica.getKey());
-                System.out.println("[Membership] Added node " + newReplica.getId() +
-                        " into ring at key: " + newReplica.getKey());
+                printAddInfo(newReplica);
             }
         }
     }
@@ -177,12 +176,14 @@ public class Ring {
         return info;
     }
 
-    public Replica[] getReplica() {
+    public Replica getReplica(String id) {
+        Replica replica;
+
         this.lock.readLock().lock();
-        Replica[] replicas = this.replicas.clone();
+        replica = this.replicas[this.addLog.get(id)];
         this.lock.readLock().unlock();
 
-        return replicas;
+        return replica;
     }
 
     public void remove(String id) {
@@ -197,11 +198,35 @@ public class Ring {
         this.lock.writeLock().unlock();
     }
 
-    public int[] getMyKeys() {
-        int[] range = new int[2];
-
+    public JsonObject checkRedirect(int hashKey) {
         this.lock.readLock().lock();
 
+        JsonObject address = null;
+        int[] myKeyRange = getMyKeys();
+        if (myKeyRange[0] == myKeyRange[1]) {
+            if (hashKey != myKeyRange[0]) {
+                address = new JsonObject();
+                address.addProperty("address", getRedirectAddress(hashKey));
+            }
+        } else if (myKeyRange[0] < myKeyRange[1]) {
+            if (hashKey < myKeyRange[0] || hashKey > myKeyRange[1]) {
+                address = new JsonObject();
+                address.addProperty("address", getRedirectAddress(hashKey));
+            }
+        } else if (myKeyRange[0] > myKeyRange[1]) {
+            if (hashKey < myKeyRange[0] && hashKey > myKeyRange[1]) {
+                address = new JsonObject();
+                address.addProperty("address", getRedirectAddress(hashKey));
+            }
+        }
+
+        this.lock.readLock().unlock();
+
+        return address;
+    }
+
+    private int[] getMyKeys() {
+        int[] range = new int[2];
         int key = Driver.replica.getKey();
         range[1] = key;
 
@@ -210,8 +235,27 @@ public class Ring {
         } while (this.replicas[key] == null);
         range[0] = (key + 1) % this.maximumNumberOfReplicas;
 
-        this.lock.readLock().unlock();
-
         return range;
+    }
+
+    private String getRedirectAddress(int hashKey) {
+        String address = null;
+
+        for (int i = hashKey, count = 0;
+             count < this.maximumNumberOfReplicas;
+             i = (i + 1) % this.maximumNumberOfReplicas, count++) {
+            if (this.replicas[i] != null) {
+                Replica replica = this.replicas[i];
+                address = replica.getHost() + ":" + replica.getPort();
+                break;
+            }
+        }
+
+        return address;
+    }
+
+    private void printAddInfo(Replica replica) {
+        System.out.println("[Membership] Added node " + replica.getId() +
+                " into ring at key: " + replica.getKey());
     }
 }

@@ -28,7 +28,7 @@ public class GossipController {
     }
 
     @RequestMapping(value = "/gossip", method = RequestMethod.GET, produces = "application/json")
-    public String goddip() {
+    public String gossip() {
         JsonObject myMembership = Driver.ring.getMembership();
         return myMembership.toString();
     }

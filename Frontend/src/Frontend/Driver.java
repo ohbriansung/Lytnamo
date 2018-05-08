@@ -3,6 +3,8 @@ package Frontend;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+import java.net.InetAddress;
+
 @SpringBootApplication
 public class Driver {
 
@@ -47,12 +49,11 @@ public class Driver {
         }
 
         if (!portInit || !coordinatorInit) {
-            //throw new Exception("Usage: java -jar backend.jar -p <port> -s <seed_or_not> -c <coordinator_address>");
+            throw new Exception("Usage: java -jar backend.jar -p <port> -s <seed_or_not> -c <coordinator_address>");
         }
 
-        // TODO: remove before deploy >>>
-        System.setProperty("server.port", "9998");
-        Driver.coordinator = "localhost:8080";
-        // TODO: remove before deploy <<<
+        System.out.println("[System] Running Coordinator on " +
+                InetAddress.getLocalHost().getHostAddress() +
+                ":" + System.getProperty("server.port"));
     }
 }

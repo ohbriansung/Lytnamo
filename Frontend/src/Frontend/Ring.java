@@ -35,8 +35,7 @@ public class Ring {
 
             this.replicas[replica.getKey()] = replica;
             this.addLog.put(replica.getId(), replica.getKey());
-            System.out.println("[Membership] Added node " + replica.getId() +
-                    " into ring at key: " + replica.getKey());
+            printAddInfo(replica);
         }
     }
 
@@ -80,8 +79,7 @@ public class Ring {
 
                 this.replicas[newReplica.getKey()] = newReplica;
                 this.addLog.put(newReplica.getId(), newReplica.getKey());
-                System.out.println("[Membership] Added node " + newReplica.getId() +
-                        " into ring at key: " + newReplica.getKey());
+                printAddInfo(newReplica);
             }
         }
     }
@@ -166,5 +164,10 @@ public class Ring {
         this.lock.readLock().unlock();
 
         return hostInfo;
+    }
+
+    private void printAddInfo(Replica replica) {
+        System.out.println("[Membership] Added node " + replica.getId() +
+                " into ring at key: " + replica.getKey());
     }
 }

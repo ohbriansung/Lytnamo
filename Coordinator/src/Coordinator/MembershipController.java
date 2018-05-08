@@ -26,11 +26,7 @@ public class MembershipController {
 
     @RequestMapping(value = "/deregister", method = RequestMethod.POST, produces = "application/json")
     public void deregister(@RequestBody Replica replica, HttpServletResponse response) {
-        boolean success = Driver.ring.remove(replica);
-
-        if (!success) {
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-        }
+        Driver.ring.remove(replica);
     }
 
     @RequestMapping(value = "/seeds", method = RequestMethod.GET, produces = "application/json")

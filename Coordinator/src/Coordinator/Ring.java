@@ -38,6 +38,9 @@ public class Ring {
             replica.setKey(key);
             this.replicas[key] = replica;
             this.currentNumberOfReplicas++;
+            System.out.println("[Membership] Added node " + replica.getId() +
+                    " into ring at key: " + key);
+            System.out.println("[Membership] " + this.currentNumberOfReplicas + " node(s) in the ring");
         }
 
         this.lock.writeLock().unlock();
@@ -45,9 +48,7 @@ public class Ring {
         return key;
     }
 
-    public boolean remove(Replica replica) {
-        boolean result = false;
-
+    public void remove(Replica replica) {
         this.lock.writeLock().lock();
 
         int key = replica.getKey();
@@ -55,12 +56,12 @@ public class Ring {
         if (this.replicas[key] != null && this.replicas[key].getId().equals(id)) {
             this.replicas[key] = null;
             this.currentNumberOfReplicas--;
-            result = true;
+            System.out.println("[Membership] Removed node " + replica.getId() +
+                    " from ring at key: " + key);
+            System.out.println("[Membership] " + this.currentNumberOfReplicas + " node(s) in the ring");
         }
 
         this.lock.writeLock().unlock();
-
-        return result;
     }
 
     public JsonArray getSeeds() {

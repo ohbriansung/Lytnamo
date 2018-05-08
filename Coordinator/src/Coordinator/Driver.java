@@ -3,6 +3,8 @@ package Coordinator;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+import java.net.InetAddress;
+
 @SpringBootApplication
 public class Driver {
 
@@ -38,5 +40,9 @@ public class Driver {
         if (!maxSlotAssigned) {
             Driver.ring = new Ring();
         }
+
+        System.out.println("[System] Running Coordinator on " +
+                InetAddress.getLocalHost().getHostAddress() +
+                ":" + System.getProperty("server.port"));
     }
 }

@@ -55,17 +55,14 @@ public class Driver {
         }
 
         if (!portInit || !coordinatorInit) {
-            //throw new Exception("Usage: java -jar backend.jar -p <port> -s <seed_or_not> -c <coordinator_address>");
+            throw new Exception("Usage: java -jar backend.jar -p <port> -s <seed_or_not> -c <coordinator_address>");
         }
-
-        // TODO: remove before deploy >>>
-        System.setProperty("server.port", "6666");
-        Driver.replica.setSeed(true);
-        Driver.coordinator = "localhost:8080";
-        // TODO: remove before deploy <<<
 
         Driver.replica.setId(UUID.randomUUID().toString());
         Driver.replica.setHost(InetAddress.getLocalHost().getHostAddress());
         Driver.replica.setPort(System.getProperty("server.port"));
+
+        System.out.println("[System] Running Coordinator on " +
+                Driver.replica.getHost() + ":" + Driver.replica.getPort());
     }
 }
