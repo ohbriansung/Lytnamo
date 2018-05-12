@@ -48,13 +48,14 @@ public class Driver {
             }
         }
 
-//        portInit = true;
-//        coordinatorInit = true;
-//        System.setProperty("server.port", "9999");
-//        Driver.coordinator = "10.1.16.234:8080";
+        portInit = true;
+        coordinatorInit = true;
+        System.setProperty("server.port", "9999");
+        Driver.coordinator = "localhost:8080";
 
         if (!portInit || !coordinatorInit) {
-            throw new Exception("Usage: java -jar frontend.jar -p <port> -c <coordinator_address>");
+            System.out.println("[System] Usage: java -jar frontend.jar -p <port> -c <coordinator_address>");
+            throw new Exception();
         }
 
         System.out.println("[System] Running Coordinator on " +

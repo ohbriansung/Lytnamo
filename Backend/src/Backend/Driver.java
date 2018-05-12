@@ -50,19 +50,21 @@ public class Driver {
                 Driver.replica.setSeed(true);
             } else if (args[i].equals("-c")) {
                 // coordinator
-                Driver.coordinator = args[++i];
+                Driver.coordinator = args[++i ];
                 coordinatorInit = true;
             }
         }
 
-//        portInit = true;
-//        coordinatorInit = true;
-//        System.setProperty("server.port", "4444");
-//        Driver.replica.setSeed(false);
-//        Driver.coordinator = "10.1.16.234:8080";
+        portInit = true;
+        coordinatorInit = true;
+        System.setProperty("server.port", "5555");
+        Driver.replica.setSeed(false);
+        Driver.coordinator = "localhost:8080";
 
         if (!portInit || !coordinatorInit) {
-            throw new Exception("Usage: java -jar backend.jar -p <port> -s <seed_or_not> -c <coordinator_address>");
+            System.out.println("[System] Usage: java -jar backend.jar -p <port> " +
+                    "-s <seed_or_not> -c <coordinator_address>");
+            throw new Exception();
         }
 
         Driver.replica.setId(UUID.randomUUID().toString());

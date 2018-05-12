@@ -16,7 +16,7 @@ public class RequestController extends HttpRequest {
         System.out.println("[Request] GET key = " + key);
 
         int hashKey = getHashKey(key);
-        String[] hostInfo = Driver.ring.findHostForKey(hashKey);
+        String[] hostInfo = Driver.ring.findCoordinatorForKey(hashKey);
 
         try {
             if (hostInfo[1] != null) {
@@ -47,7 +47,7 @@ public class RequestController extends HttpRequest {
                 requestBody.replaceAll(System.lineSeparator(), "").replaceAll("\t", ""));
 
         int hashKey = getHashKey(key);
-        String[] hostInfo = Driver.ring.findHostForKey(hashKey);
+        String[] hostInfo = Driver.ring.findCoordinatorForKey(hashKey);
         JsonObject body;
 
         try {

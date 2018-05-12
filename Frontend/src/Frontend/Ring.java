@@ -139,25 +139,46 @@ public class Ring {
         return this.maximumNumberOfReplicas;
     }
 
-    public String[] findHostForKey(int key) {
+    /**
+     * Randomly choose a data coordinator from the preference list of a key.
+     * That means any node in the preference could be the coordinator to replicate the data.
+     *
+     * @param key
+     * @return String[]
+     */
+    public String[] findCoordinatorForKey(int key) {
+        int randomPick, keyOfHost;
+        Random random = new Random();
         String[] hostInfo = new String[2];
 
         this.lock.readLock().lock();
 
-        for (int i = key, count = 0;
-             count < this.maximumNumberOfReplicas;
-             i = (i + 1) % this.maximumNumberOfReplicas, count++) {
-            if (this.replicas[i] != null) {
-                Replica replica = this.replicas[i];
-                hostInfo[0] = replica.getId();
-                hostInfo[1] = replica.getHost() + ":" + replica.getPort();
-                break;
-            }
-        }
+        List<Integer> preferenceList = getPreferenceList(key);
+        randomPick = random.nextInt(preferenceList.size());
+        keyOfHost = preferenceList.get(randomPick);
+        hostInfo[0] = this.replicas[keyOfHost].getId();
+        hostInfo[1] = this.replicas[keyOfHost].getHost() + ":" + this.replicas[keyOfHost].getPort();
 
         this.lock.readLock().unlock();
 
         return hostInfo;
+    }
+
+    private List<Integer> getPreferenceList(int key) {
+        List<Integer> preferenceList  = new ArrayList<>();
+        int startingPoint = key;
+        int totalNodeVisited = 0;
+
+        do {
+            if (this.replicas[key] != null) {
+                preferenceList.add(key);
+                totalNodeVisited++;
+            }
+
+            key = (key + 1) % this.maximumNumberOfReplicas;
+        } while (totalNodeVisited < this.N && key != startingPoint);
+
+        return preferenceList;
     }
 
     private void printAddInfo(Replica replica) {

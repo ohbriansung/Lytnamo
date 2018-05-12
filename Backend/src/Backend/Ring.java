@@ -202,9 +202,10 @@ public class Ring {
     }
 
     public JsonObject checkRedirect(int hashKey) {
+        JsonObject address = null;
+
         this.lock.readLock().lock();
 
-        JsonObject address = null;
         int[] myKeyRange = getMyKeys();
         if (myKeyRange[0] == myKeyRange[1]) {
             if (hashKey != myKeyRange[0]) {
@@ -228,14 +229,26 @@ public class Ring {
         return address;
     }
 
+    /**
+     * a node can handle the keys within N predecessors,
+     * break the loop when either situation:
+     * 1. the range covers entire preference list
+     * 2. the range covers whole ring
+     *
+     * @return int[]
+     */
     private int[] getMyKeys() {
+        int totalNodeVisited = 0;
         int[] range = new int[2];
         int key = Driver.replica.getKey();
         range[1] = key;
 
         do {
             key = (key - 1 < 0) ? (this.maximumNumberOfReplicas - 1) : (key - 1);
-        } while (this.replicas[key] == null);
+            if (this.replicas[key] != null) {
+                totalNodeVisited++;
+            }
+        } while (key != Driver.replica.getKey() && totalNodeVisited < this.N);
         range[0] = (key + 1) % this.maximumNumberOfReplicas;
 
         return range;

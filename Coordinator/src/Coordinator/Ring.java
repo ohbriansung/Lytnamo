@@ -163,4 +163,8 @@ public class Ring {
 
         return seeds;
     }
+
+    public int getMaximumNumberOfReplicas() {
+        return this.maximumNumberOfReplicas;
+    }
 }

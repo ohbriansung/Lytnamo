@@ -62,12 +62,18 @@ public class Driver {
         }
 
         if (!maxSlotAssigned) {
+            // Initialize the ring with default size of 256
             Driver.ring = new Ring();
         }
 
         if (!checkN || !checkW || !checkR) {
-            throw new Exception("Usage: java -jar Coordinator.jar -p <port> -max <ring_size> " +
+            System.out.println("[System] Usage: java -jar Coordinator.jar -p <port> -max <ring_size> " +
                     "-n <nodes_in_preference_list> -w <min_nodes_write> -r <min_nodes_read>");
+            throw new Exception();
+        } else if (n <= 0 || w <= 0 || r <= 0 || w > n || r > n
+                || n > Driver.ring.getMaximumNumberOfReplicas()) {
+            System.out.println("[System] Invalid parameter(s): N, W, or R");
+            throw new Exception();
         } else {
             Driver.ring.setN(n);
             Driver.ring.setN(w);

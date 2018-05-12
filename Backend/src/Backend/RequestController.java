@@ -13,8 +13,8 @@ public class RequestController extends HttpRequest {
             , HttpServletResponse response) {
         System.out.println("[Request] GET hashKey = " + hashKey + ", key = " + key);
 
-        JsonObject redirect;
-        if ((redirect = redirect(hashKey)) == null) {
+        JsonObject redirect = redirect(hashKey);
+        if (redirect == null) {
             JsonObject data = Driver.dataStorage.get(hashKey, key);
             if (data == null) {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -35,8 +35,8 @@ public class RequestController extends HttpRequest {
         System.out.println("[Request] POST hashKey = " + hashKey + ", key = " + key + ", requestBody = " +
                 requestBody.replaceAll(System.lineSeparator(), "").replaceAll("\t", ""));
 
-        JsonObject redirect;
-        if ((redirect = redirect(hashKey)) == null) {
+        JsonObject redirect = redirect(hashKey);
+        if (redirect == null) {
             JsonObject body = parseJson(requestBody).getAsJsonObject();
             Driver.dataStorage.put(hashKey, key, body);
             return null;
