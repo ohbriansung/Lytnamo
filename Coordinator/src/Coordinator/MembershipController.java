@@ -14,9 +14,8 @@ public class MembershipController {
         JsonObject responseBody = new JsonObject();
 
         if (key != -1) {
+            responseBody = Driver.ring.getSeedsAndRingProperty();
             responseBody.addProperty("key", key);
-            responseBody.addProperty("capacity", Driver.ring.getMaximumNumberOfReplicas());
-            responseBody.add("seeds", Driver.ring.getSeeds());
         } else {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
         }
@@ -31,9 +30,7 @@ public class MembershipController {
 
     @RequestMapping(value = "/seeds", method = RequestMethod.GET, produces = "application/json")
     public String getMembership() {
-        JsonObject responseBody = new JsonObject();
-        responseBody.addProperty("capacity", Driver.ring.getMaximumNumberOfReplicas());
-        responseBody.add("seeds", Driver.ring.getSeeds());
+        JsonObject responseBody = Driver.ring.getSeedsAndRingProperty();
 
         return responseBody.toString();
     }

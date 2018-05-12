@@ -12,14 +12,17 @@ public class Starter extends HttpRequest {
 
         if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
             JsonObject responseBody = parseResponse(connection).getAsJsonObject();
-            initMembership(responseBody);
+            initRing(responseBody);
         } else {
             throw new Exception("[System] Failed to initialize to the membership.");
         }
     }
 
-    private void initMembership(JsonObject responseBody) {
+    private void initRing(JsonObject responseBody) {
         Driver.ring = new Ring(responseBody.get("capacity").getAsInt());
+        Driver.ring.setN(responseBody.get("N").getAsInt());
+        Driver.ring.setW(responseBody.get("W").getAsInt());
+        Driver.ring.setR(responseBody.get("R").getAsInt());
         Driver.ring.initMembership(responseBody.get("seeds").getAsJsonArray());
     }
 }

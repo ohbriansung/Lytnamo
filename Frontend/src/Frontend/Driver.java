@@ -39,11 +39,11 @@ public class Driver {
         for (int i = 0; i < args.length - 1; i++) {
             if (args[i].equals("-p")) {
                 // port
-                System.setProperty("server.port", args[i + 1]);
+                System.setProperty("server.port", args[++i]);
                 portInit = true;
             } else if (args[i].equals("-c")) {
                 // coordinator
-                Driver.coordinator = args[i + 1];
+                Driver.coordinator = args[++i];
                 coordinatorInit = true;
             }
         }

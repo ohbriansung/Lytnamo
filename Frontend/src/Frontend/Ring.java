@@ -13,6 +13,9 @@ public class Ring {
     private final Replica[] replicas;
     private final Map<String, Integer> addLog;
     private final Set<String> deleteLog;
+    private volatile int N;
+    private volatile int W;
+    private volatile int R;
 
     public Ring(int maximumNumberOfReplicas) {
         this.lock = new ReentrantReadWriteLock();
@@ -160,5 +163,17 @@ public class Ring {
     private void printAddInfo(Replica replica) {
         System.out.println("[Membership] Added node " + replica.getId() +
                 " into ring at key: " + replica.getKey());
+    }
+
+    public void setN(int N) {
+        this.N = N;
+    }
+
+    public void setW(int W) {
+        this.W = W;
+    }
+
+    public void setR(int R) {
+        this.R = R;
     }
 }

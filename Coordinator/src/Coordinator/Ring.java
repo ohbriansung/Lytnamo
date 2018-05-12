@@ -1,6 +1,7 @@
 package Coordinator;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,6 +12,9 @@ public class Ring {
     private final ReentrantReadWriteLock lock;
     private final int maximumNumberOfReplicas;
     private final Replica[] replicas;
+    private volatile int N;
+    private volatile int W;
+    private volatile int R;
     private int currentNumberOfReplicas;
 
     public Ring() {
@@ -22,10 +26,6 @@ public class Ring {
         this.maximumNumberOfReplicas = maximumNumberOfReplicas;
         this.replicas = new Replica[maximumNumberOfReplicas];
         this.currentNumberOfReplicas = 0;
-    }
-
-    public int getMaximumNumberOfReplicas() {
-        return this.maximumNumberOfReplicas;
     }
 
     public int add(Replica replica) {
@@ -62,20 +62,6 @@ public class Ring {
         }
 
         this.lock.writeLock().unlock();
-    }
-
-    public JsonArray getSeeds() {
-        JsonArray seeds = new JsonArray();
-
-        this.lock.readLock().lock();
-        for (int i = 0; i < this.maximumNumberOfReplicas; i++) {
-            if (this.replicas[i] != null && this.replicas[i].isSeed()) {
-                seeds.add(this.replicas[i].toJson());
-            }
-        }
-        this.lock.readLock().unlock();
-
-        return seeds;
     }
 
     private int assignKey() {
@@ -136,5 +122,45 @@ public class Ring {
         }
 
         return key;
+    }
+
+    public void setN(int N) {
+        this.N = N;
+    }
+
+    public void setW(int W) {
+        this.W = W;
+    }
+
+    public void setR(int R) {
+        this.R = R;
+    }
+
+    public JsonObject getSeedsAndRingProperty() {
+        JsonObject obj = new JsonObject();
+
+        this.lock.readLock().lock();
+
+        obj.addProperty("capacity", this.maximumNumberOfReplicas);
+        obj.addProperty("N", this.N);
+        obj.addProperty("W", this.W);
+        obj.addProperty("R", this.R);
+        obj.add("seeds", getSeeds());
+
+        this.lock.readLock().unlock();
+
+        return obj;
+    }
+
+    private JsonArray getSeeds() {
+        JsonArray seeds = new JsonArray();
+
+        for (int i = 0; i < this.maximumNumberOfReplicas; i++) {
+            if (this.replicas[i] != null && this.replicas[i].isSeed()) {
+                seeds.add(this.replicas[i].toJson());
+            }
+        }
+
+        return seeds;
     }
 }
