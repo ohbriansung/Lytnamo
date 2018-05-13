@@ -50,6 +50,10 @@ public class Replica {
         return this.key;
     }
 
+    public String getAddress() {
+        return this.host + ":" + this.port;
+    }
+
     public JsonObject toJson() {
         JsonObject obj = new JsonObject();
         obj.addProperty("id", this.id);

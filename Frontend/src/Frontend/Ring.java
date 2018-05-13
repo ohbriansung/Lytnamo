@@ -143,17 +143,17 @@ public class Ring {
      * Randomly choose a data coordinator from the preference list of a key.
      * That means any node in the preference could be the coordinator to replicate the data.
      *
-     * @param key
+     * @param hashKey
      * @return String[]
      */
-    public String[] findCoordinatorForKey(int key) {
+    public String[] findCoordinatorForKey(int hashKey) {
         int randomPick, keyOfHost;
         Random random = new Random();
         String[] hostInfo = new String[2];
 
         this.lock.readLock().lock();
 
-        List<Integer> preferenceList = getPreferenceList(key);
+        List<Integer> preferenceList = getPreferenceList(hashKey);
         randomPick = random.nextInt(preferenceList.size());
         keyOfHost = preferenceList.get(randomPick);
         hostInfo[0] = this.replicas[keyOfHost].getId();
@@ -164,19 +164,19 @@ public class Ring {
         return hostInfo;
     }
 
-    private List<Integer> getPreferenceList(int key) {
+    private List<Integer> getPreferenceList(int hashKey) {
         List<Integer> preferenceList  = new ArrayList<>();
-        int startingPoint = key;
+        int startingPoint = hashKey;
         int totalNodeVisited = 0;
 
         do {
-            if (this.replicas[key] != null) {
-                preferenceList.add(key);
+            if (this.replicas[hashKey] != null) {
+                preferenceList.add(hashKey);
                 totalNodeVisited++;
             }
 
-            key = (key + 1) % this.maximumNumberOfReplicas;
-        } while (totalNodeVisited < this.N && key != startingPoint);
+            hashKey = (hashKey + 1) % this.maximumNumberOfReplicas;
+        } while (totalNodeVisited < this.N && hashKey != startingPoint);
 
         return preferenceList;
     }

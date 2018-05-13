@@ -34,16 +34,30 @@ public class RequestController extends HttpRequest {
             , @RequestBody String requestBody, HttpServletResponse response) {
         System.out.println("[Request] POST hashKey = " + hashKey + ", key = " + key + ", requestBody = " +
                 requestBody.replaceAll(System.lineSeparator(), "").replaceAll("\t", ""));
+        JsonObject body = parseJson(requestBody).getAsJsonObject();
 
-        JsonObject redirect = redirect(hashKey);
-        if (redirect == null) {
-            JsonObject body = parseJson(requestBody).getAsJsonObject();
+        if (body.get("replicate") != null) {
             Driver.dataStorage.put(hashKey, key, body);
+
             return null;
         } else {
-            response.setStatus(HttpServletResponse.SC_TEMPORARY_REDIRECT);
+            JsonObject redirect = redirect(hashKey);
 
-            return redirect.toString();
+            if (redirect == null) {
+                Driver.dataStorage.put(hashKey, key, body);
+
+                try {
+                    Thread task = new Thread(new Replication(hashKey, key, body));
+                    task.start();
+                    task.join();
+                } catch (InterruptedException ignored) {}
+
+                return null;
+            } else {
+                response.setStatus(HttpServletResponse.SC_TEMPORARY_REDIRECT);
+
+                return redirect.toString();
+            }
         }
     }
 

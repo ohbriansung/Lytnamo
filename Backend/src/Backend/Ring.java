@@ -171,7 +171,7 @@ public class Ring {
             int key = this.addLog.get(id);
             Replica peer = this.replicas[key];
             info[0] = id;
-            info[1] = peer.getHost() + ":" + peer.getPort();
+            info[1] = peer.getAddress();
         }
 
         this.lock.readLock().unlock();
@@ -201,6 +201,12 @@ public class Ring {
         this.lock.writeLock().unlock();
     }
 
+    /**
+     * Redirect to the top node of preference list.
+     *
+     * @param hashKey
+     * @return
+     */
     public JsonObject checkRedirect(int hashKey) {
         JsonObject address = null;
 
@@ -254,6 +260,31 @@ public class Ring {
         return range;
     }
 
+    public List<String[]> getPreferenceList(int hashKey) {
+        List<String[]> preferenceList  = new ArrayList<>();
+        int startingPoint = hashKey;
+        int totalNodeVisited = 0;
+
+        this.lock.readLock().lock();
+
+        do {
+            if (this.replicas[hashKey] != null && hashKey != Driver.replica.getKey()) {
+                Replica replica = this.replicas[hashKey];
+                String[] info = new String[2];
+                info[0] = replica.getId();
+                info[1] = replica.getAddress();
+                preferenceList.add(info);
+                totalNodeVisited++;
+            }
+
+            hashKey = (hashKey + 1) % this.maximumNumberOfReplicas;
+        } while (totalNodeVisited < this.N - 1 && hashKey != startingPoint);
+
+        this.lock.readLock().unlock();
+
+        return preferenceList;
+    }
+
     private String getRedirectAddress(int hashKey) {
         String address = null;
 
@@ -262,7 +293,7 @@ public class Ring {
              i = (i + 1) % this.maximumNumberOfReplicas, count++) {
             if (this.replicas[i] != null) {
                 Replica replica = this.replicas[i];
-                address = replica.getHost() + ":" + replica.getPort();
+                address = replica.getAddress();
                 break;
             }
         }
@@ -285,5 +316,17 @@ public class Ring {
 
     public void setR(int R) {
         this.R = R;
+    }
+
+    public int getN() {
+        return this.N;
+    }
+
+    public int getW() {
+        return this.W;
+    }
+
+    public int getR() {
+        return this.R;
     }
 }

@@ -76,8 +76,8 @@ public class Driver {
             throw new Exception();
         } else {
             Driver.ring.setN(n);
-            Driver.ring.setN(w);
-            Driver.ring.setN(r);
+            Driver.ring.setW(w);
+            Driver.ring.setR(r);
         }
 
         String port = System.getProperty("server.port");

@@ -57,8 +57,8 @@ public class Driver {
 
         portInit = true;
         coordinatorInit = true;
-        System.setProperty("server.port", "5555");
-        Driver.replica.setSeed(false);
+        System.setProperty("server.port", "2222");
+        Driver.replica.setSeed(true);
         Driver.coordinator = "localhost:8080";
 
         if (!portInit || !coordinatorInit) {
@@ -72,6 +72,6 @@ public class Driver {
         Driver.replica.setPort(System.getProperty("server.port"));
 
         System.out.println("[System] Running Coordinator on " +
-                Driver.replica.getHost() + ":" + Driver.replica.getPort());
+                Driver.replica.getAddress());
     }
 }
