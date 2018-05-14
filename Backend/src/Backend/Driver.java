@@ -57,7 +57,7 @@ public class Driver {
 
         portInit = true;
         coordinatorInit = true;
-        System.setProperty("server.port", "4444");
+        System.setProperty("server.port", "5555");
         Driver.replica.setSeed(false);
         Driver.coordinator = "localhost:8080";
 

@@ -11,7 +11,7 @@ import java.util.concurrent.CountDownLatch;
  * Reference:
  * [CountDownLatch] https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/CountDownLatch.html
  */
-public class Replication implements Runnable {
+public class Replication {
     private final int hashKey;
     private final String key;
     private final JsonObject requestBody;
@@ -23,16 +23,16 @@ public class Replication implements Runnable {
         this.requestBody.addProperty("replicate", true);
     }
 
-    @Override
-    public void run() {
+    public void start() {
         int minimumSuccessWrite = Driver.ring.getW() - 1;
         CountDownLatch startSignal = new CountDownLatch(1);
         CountDownLatch finishSignal = new CountDownLatch(minimumSuccessWrite);
         List<String[]> preferenceList = Driver.ring.getPreferenceList(this.hashKey);
+        String uri = "/put/" + this.hashKey + "/" + this.key;
 
         for (int i = 0; i < preferenceList.size(); i++) {
             String[] hostInfo = preferenceList.get(i);
-            new Thread(new Send(hostInfo, startSignal, finishSignal)).start();
+            new Thread(new Send(startSignal, finishSignal, hostInfo, uri)).start();
         }
 
         startSignal.countDown();
@@ -46,13 +46,13 @@ public class Replication implements Runnable {
         private final CountDownLatch startSignal;
         private final CountDownLatch finishSignal;
         private final String[] hostInfo;
-        private String url;
+        private final String url;
 
-        private Send(String[] hostInfo, CountDownLatch startSignal, CountDownLatch finishSignal) {
+        private Send(CountDownLatch startSignal, CountDownLatch finishSignal, String[] hostInfo, String uri) {
             this.startSignal = startSignal;
             this.finishSignal = finishSignal;
             this.hostInfo = hostInfo;
-            this.url = hostInfo[1] + "/put/" + Replication.this.hashKey + "/" + Replication.this.key;
+            this.url = hostInfo[1] + uri;
         }
 
         @Override

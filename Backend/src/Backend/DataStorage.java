@@ -72,15 +72,15 @@ public class DataStorage {
         this.lock.writeLock().unlock();
     }
 
-//    public JsonObject get(int hashKey, String key) {
-//        JsonObject data = null;
-//
-//        this.lock.readLock().lock();
-//        if (this.buckets.containsKey(hashKey)) {
-//            data = this.buckets.get(hashKey).get(key);
-//        }
-//        this.lock.readLock().unlock();
-//
-//        return data;
-//    }
+    public JsonObject get(int hashKey, String key) {
+        JsonObject data = null;
+
+        this.lock.readLock().lock();
+        if (this.buckets.containsKey(hashKey)) {
+            data = this.buckets.get(hashKey).get(key).toJson();
+        }
+        this.lock.readLock().unlock();
+
+        return data;
+    }
 }

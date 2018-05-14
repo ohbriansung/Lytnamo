@@ -1,5 +1,6 @@
 package Frontend;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import org.springframework.web.bind.annotation.*;
@@ -25,7 +26,7 @@ public class RequestController extends HttpRequest {
 
                 response.setStatus(connection.getResponseCode());
                 if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
-                    JsonObject responseBody = parseResponse(connection).getAsJsonObject();
+                    JsonArray responseBody = parseResponse(connection).getAsJsonArray();
                     return responseBody.toString();
                 } else {
                     return null;
