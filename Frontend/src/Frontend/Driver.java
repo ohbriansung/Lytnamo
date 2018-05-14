@@ -7,7 +7,6 @@ import java.net.InetAddress;
 
 @SpringBootApplication
 public class Driver {
-
     static Ring ring;
     static String coordinator;
     static boolean alive = true;

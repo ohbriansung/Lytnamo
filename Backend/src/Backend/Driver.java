@@ -8,7 +8,6 @@ import java.util.UUID;
 
 @SpringBootApplication
 public class Driver {
-
     static final Replica replica = new Replica();
     static final DataStorage dataStorage = new DataStorage();
     static Ring ring;
@@ -57,7 +56,7 @@ public class Driver {
 
         portInit = true;
         coordinatorInit = true;
-        System.setProperty("server.port", "5555");
+        System.setProperty("server.port", "4444");
         Driver.replica.setSeed(false);
         Driver.coordinator = "localhost:8080";
 
