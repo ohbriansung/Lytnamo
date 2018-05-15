@@ -32,7 +32,13 @@ public class Replication {
 
         for (int i = 0; i < preferenceList.size(); i++) {
             String[] hostInfo = preferenceList.get(i);
-            new Thread(new Send(startSignal, finishSignal, hostInfo, uri, this.requestBody)).start();
+
+            if (this.requestBody.get("demo") != null && i == 0) {
+                new Thread(new Send(startSignal, finishSignal, hostInfo, uri, this.requestBody.deepCopy())).start();
+                this.requestBody.remove("demo");
+            } else {
+                new Thread(new Send(startSignal, finishSignal, hostInfo, uri, this.requestBody)).start();
+            }
         }
 
         startSignal.countDown();
@@ -65,10 +71,14 @@ public class Replication {
             } catch (InterruptedException ignored) {}
 
             try {
-                HttpURLConnection connection = doPostRequest(this.url, this.requestBody);
-
-                if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
+                if (this.requestBody.get("demo") != null) {
                     throw new IOException();
+                } else {
+                    HttpURLConnection connection = doPostRequest(this.url, this.requestBody);
+
+                    if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
+                        throw new IOException();
+                    }
                 }
             } catch (IOException ignored) {
                 sendHintedData(this.requestBody.deepCopy());
