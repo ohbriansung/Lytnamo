@@ -16,6 +16,9 @@ public class MembershipController {
         if (key != -1) {
             responseBody = Driver.ring.getSeedsAndRingProperty();
             responseBody.addProperty("key", key);
+
+            TransferReplicates transfer = new TransferReplicates(key);
+            transfer.toNewReplica();
         } else {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
         }

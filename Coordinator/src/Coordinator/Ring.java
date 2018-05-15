@@ -167,4 +167,80 @@ public class Ring {
     public int getMaximumNumberOfReplicas() {
         return this.maximumNumberOfReplicas;
     }
+
+    public List<JsonObject> getTransferDetailForNewReplica(int key) {
+        List<JsonObject> details = new ArrayList<>();
+
+        this.lock.readLock().lock();
+
+        if (this.currentNumberOfReplicas > 1) {
+            if (this.currentNumberOfReplicas <= this.N) {
+                JsonObject detail = new JsonObject();
+                detail.addProperty("to", this.replicas[key].getAddress());
+                detail.addProperty("from", this.replicas[findNextKey(key)].getAddress());
+
+                JsonArray range = new JsonArray();
+                range.add(0);
+                range.add(this.maximumNumberOfReplicas - 1);
+                detail.add("range", range);
+
+                details.add(detail);
+            } else {
+                int preKey = key;
+                for (int i = 0; i < this.N; i++) {
+                    JsonObject detail = new JsonObject();
+                    detail.addProperty("to", this.replicas[key].getAddress());
+
+                    int nextKey = findNextKey(preKey);
+                    detail.addProperty("from", this.replicas[nextKey].getAddress());
+
+                    JsonArray range = findRangeOfKey(this.N + 1, this.N, nextKey);
+                    detail.add("range", range);
+
+                    details.add(detail);
+                    preKey = nextKey;
+                }
+            }
+        }
+
+        this.lock.readLock().unlock();
+
+        return details;
+    }
+
+    private int findNextKey(int key) {
+        int next = key;
+
+        for (int i = key + 1; i != key; i = (i + 1) % this.maximumNumberOfReplicas) {
+            if (this.replicas[i] != null) {
+                next = i;
+                break;
+            }
+        }
+
+        return next;
+    }
+
+    private JsonArray findRangeOfKey(int start, int end, int key) {
+        JsonArray range = new JsonArray();
+        range.add((findPreNthKey(start, key) + 1) % this.maximumNumberOfReplicas);
+        range.add((findPreNthKey(end, key)));
+
+        return range;
+    }
+
+    private int findPreNthKey(int n, int key) {
+        int result = key;
+        int visitedNode = 0;
+
+        for (int i = (key == 0) ? (this.maximumNumberOfReplicas - 1) : (key - 1); visitedNode < n;
+             i = (i - 1 < 0) ? (this.maximumNumberOfReplicas - 1) : (i - 1)) {
+            if (this.replicas[i] != null) {
+                visitedNode++;
+                result = i;
+            }
+        }
+
+        return result;
+    }
 }

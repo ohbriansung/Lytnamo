@@ -16,7 +16,7 @@ public class GossipController {
             JsonObject myMembership = Driver.ring.getMembership();
 
             JsonParser parser = new JsonParser();
-            JsonObject inMembership = (JsonObject) parser.parse(request);
+            JsonObject inMembership = parser.parse(request).getAsJsonObject();
             Driver.ring.updateMembership(inMembership);
 
             return myMembership.toString();

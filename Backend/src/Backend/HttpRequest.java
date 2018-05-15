@@ -30,7 +30,7 @@ abstract class HttpRequest {
         return connection;
     }
 
-    HttpURLConnection doPostRequest(String url, JsonObject body) throws IOException {
+    HttpURLConnection doPostRequest(String url, JsonElement body) throws IOException {
         HttpURLConnection connection = initConnection(url);
         connection.setRequestMethod("POST");
         connection.setRequestProperty("Content-Type", "application/json");

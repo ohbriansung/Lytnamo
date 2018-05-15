@@ -15,7 +15,8 @@ public class Starter extends HttpRequest {
             Driver.replica.setKey(responseBody.get("key").getAsInt());
             initRing(responseBody);
         } else {
-            throw new Exception("[System] Failed to register to the membership.");
+            System.out.println("[System] Failed to register to the membership");
+            throw new Exception();
         }
     }
 

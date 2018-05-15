@@ -329,4 +329,8 @@ public class Ring {
     public int getR() {
         return this.R;
     }
+
+    public int getMaximumNumberOfReplicas() {
+        return this.maximumNumberOfReplicas;
+    }
 }

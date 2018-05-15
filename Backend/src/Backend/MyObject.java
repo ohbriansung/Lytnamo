@@ -20,30 +20,64 @@ public class MyObject {
         this.vectorClock = new HashMap<>();
     }
 
-    public void add(JsonObject data) throws NullPointerException {
-        this.lock.writeLock().lock();
-
-        this.items.add(data.get("item").getAsString());
-        incrementVectorClock();
-        data.add("clocks", getClock());
-
-        this.lock.writeLock().unlock();
-    }
-
-    public boolean remove(JsonObject data) throws NullPointerException {
-        boolean success;
+    public JsonArray add(JsonObject data) throws NullPointerException {
+        JsonArray clocks = data.get("version").getAsJsonArray();
 
         this.lock.writeLock().lock();
 
-        success = this.items.remove(data.get("item").getAsString());
-        if (success) {
+        if (checkUpdateVersion(clocks)) {
+            this.items.add(data.get("item").getAsString());
             incrementVectorClock();
             data.add("clocks", getClock());
+
+            clocks = null;
+        } else {
+            clocks = getClock();
         }
 
         this.lock.writeLock().unlock();
 
-        return success;
+        return clocks;
+    }
+
+    public JsonArray remove(JsonObject data) throws NullPointerException {
+        JsonArray clocks = data.get("version").getAsJsonArray();
+
+        this.lock.writeLock().lock();
+
+        if (checkUpdateVersion(clocks)) {
+            this.items.remove(data.get("item").getAsString());
+            incrementVectorClock();
+            data.add("clocks", getClock());
+
+            clocks = null;
+        } else {
+            clocks = getClock();
+        }
+
+        this.lock.writeLock().unlock();
+
+        return clocks;
+    }
+
+    private boolean checkUpdateVersion(JsonArray clocks) {
+        boolean result = true;
+
+        if (clocks.size() != this.vectorClock.size()) {
+            result = false;
+        } else {
+            for (int i = 0; i < clocks.size(); i++) {
+                JsonObject clock = clocks.get(i).getAsJsonObject();
+                String node = clock.get("node").getAsString();
+                int timestamp = clock.get("timestamp").getAsInt();
+
+                if (!this.vectorClock.containsKey(node) || this.vectorClock.get(node) != timestamp) {
+                    result = false;
+                }
+            }
+        }
+
+        return result;
     }
 
     public void storeReplicate(JsonObject replicate) {
@@ -67,6 +101,8 @@ public class MyObject {
             }
 
             overwriteClock(clocks);
+        } else {
+            System.out.println("[Replication] Divergent versions appeared");
         }
 
         this.lock.writeLock().unlock();
@@ -143,5 +179,30 @@ public class MyObject {
         }
         this.vectorClock.put(Driver.replica.getId(),
                 this.vectorClock.get(Driver.replica.getId()) + 1);
+    }
+
+    public void overwrite(JsonObject data) {
+        this.lock.writeLock().lock();
+
+        JsonArray items = data.get("items").getAsJsonArray();
+        JsonArray clocks = data.get("clocks").getAsJsonArray();
+
+        this.items.clear();
+        for (int i = 0; i < items.size(); i++) {
+            this.items.add(items.get(i).getAsString());
+        }
+
+        this.vectorClock.clear();
+        overwriteClock(clocks);
+
+        if (data.get("replicate") == null) {
+            incrementVectorClock();
+
+            data.remove("clocks");
+            data.add("clocks", getClock());
+            data.addProperty("replicate", true);
+        }
+
+        this.lock.writeLock().unlock();
     }
 }
