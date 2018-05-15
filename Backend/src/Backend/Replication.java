@@ -32,7 +32,7 @@ public class Replication {
 
         for (int i = 0; i < preferenceList.size(); i++) {
             String[] hostInfo = preferenceList.get(i);
-            new Thread(new Send(startSignal, finishSignal, hostInfo, uri)).start();
+            new Thread(new Send(startSignal, finishSignal, hostInfo, uri, this.requestBody)).start();
         }
 
         startSignal.countDown();
@@ -47,12 +47,15 @@ public class Replication {
         private final CountDownLatch finishSignal;
         private final String[] hostInfo;
         private final String url;
+        private final JsonObject requestBody;
 
-        private Send(CountDownLatch startSignal, CountDownLatch finishSignal, String[] hostInfo, String uri) {
+        private Send(CountDownLatch startSignal, CountDownLatch finishSignal, String[] hostInfo
+                , String uri, JsonObject requestBody) {
             this.startSignal = startSignal;
             this.finishSignal = finishSignal;
             this.hostInfo = hostInfo;
             this.url = hostInfo[1] + uri;
+            this.requestBody = requestBody;
         }
 
         @Override
@@ -62,16 +65,29 @@ public class Replication {
             } catch (InterruptedException ignored) {}
 
             try {
-                HttpURLConnection connection = doPostRequest(this.url, Replication.this.requestBody);
+                HttpURLConnection connection = doPostRequest(this.url, this.requestBody);
 
                 if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
                     throw new IOException();
                 }
             } catch (IOException ignored) {
-                // TODO: add failure handling
+                sendHintedData(this.requestBody.deepCopy());
             } finally {
                 this.finishSignal.countDown();
             }
+        }
+
+        private void sendHintedData(JsonObject hintedData) {
+            String targetAddress = Driver.ring.getNPlusOneNodeAddress();
+            String url = targetAddress + "/hinted/put";
+            hintedData.addProperty("id", this.hostInfo[0]);
+            hintedData.addProperty("hashKey", Replication.this.hashKey);
+            hintedData.addProperty("key", Replication.this.key);
+
+            try {
+                HttpURLConnection connection = doPostRequest(url, hintedData);
+                connection.getResponseCode();
+            } catch (Exception ignored) {}
         }
     }
 }

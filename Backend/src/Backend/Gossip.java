@@ -1,5 +1,6 @@
 package Backend;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 
@@ -17,17 +18,22 @@ public class Gossip extends HttpRequest implements Runnable {
                 String url = peerInfo[1] + "/gossip";
                 JsonObject requestBody = Driver.ring.getMembership();
 
+                JsonArray hintedData = Driver.dataStorage.getHintedData(peerInfo[0]);
+                if (hintedData != null && hintedData.size() > 0) {
+                    requestBody.add("hintedData", hintedData);
+                }
+
                 try {
                     HttpURLConnection connection = doPostRequest(url, requestBody);
                     JsonObject response = parseResponse(connection).getAsJsonObject();
 
                     if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
                         Driver.ring.updateMembership(response);
+                        Driver.dataStorage.removeHintedData(peerInfo[0]);
                     } else {
                         throw new IOException();
                     }
                 } catch (JsonParseException ignored) {
-
                 } catch (IOException ignored) {
                     remove(peerInfo[0]);
                 }

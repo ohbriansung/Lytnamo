@@ -118,4 +118,12 @@ public class RequestController extends HttpRequest {
             }
         }
     }
+
+    @RequestMapping(value = "/hinted/put", method = RequestMethod.POST, produces = "application/json")
+    public void hintedPut(@RequestBody String requestBody) {
+        System.out.println("[Request] POST /hinted/put requestBody = " +
+                requestBody.replaceAll(System.lineSeparator(), "").replaceAll("\t", ""));
+        JsonObject body = parseJson(requestBody).getAsJsonObject();
+        Driver.dataStorage.hintedPut(body);
+    }
 }

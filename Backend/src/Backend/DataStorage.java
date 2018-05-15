@@ -11,10 +11,12 @@ public class DataStorage {
 
     private final ReentrantReadWriteLock lock;
     private final Map<Integer, Map<String, MyObject>> buckets;
+    private final Map<String, JsonArray> histedData;
 
     public DataStorage() {
         this.lock = new ReentrantReadWriteLock();
         this.buckets = new HashMap<>();
+        this.histedData = new HashMap<>();
     }
 
     public JsonArray put(int hashKey, String key, JsonObject data) throws NullPointerException {
@@ -159,5 +161,45 @@ public class DataStorage {
         this.lock.readLock().unlock();
 
         object.overwrite(data);
+    }
+
+    public void hintedPut(JsonObject hintedData) {
+        this.lock.writeLock().lock();
+
+        String id = hintedData.get("id").getAsString();
+        if (!this.histedData.containsKey(id)) {
+            this.histedData.put(id, new JsonArray());
+        }
+        this.histedData.get(id).add(hintedData);
+
+        this.lock.writeLock().unlock();
+    }
+
+    public JsonArray getHintedData(String id) {
+        this.lock.readLock().lock();
+
+        JsonArray hintedData = this.histedData.get(id);
+
+        this.lock.readLock().unlock();
+
+        return hintedData;
+    }
+
+    public void removeHintedData(String id) {
+        this.lock.writeLock().lock();
+
+        this.histedData.remove(id);
+
+        this.lock.writeLock().unlock();
+    }
+
+    public void restoreHintedData(JsonArray hintedData) {
+        for (int i = 0; i < hintedData.size(); i++) {
+            JsonObject data = hintedData.get(i).getAsJsonObject();
+            int hashKey = data.get("hashKey").getAsInt();
+            String key = data.get("key").getAsString();
+
+            storeReplicate(hashKey, key, data);
+        }
     }
 }

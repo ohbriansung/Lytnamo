@@ -204,6 +204,8 @@ public class Ring {
         System.out.println("[Membership] Removed node " + id +
                 " from ring at key: " + key);
 
+        Driver.dataStorage.removeHintedData(id);
+
         this.lock.writeLock().unlock();
     }
 
@@ -350,5 +352,28 @@ public class Ring {
         this.lock.readLock().unlock();
 
         return num;
+    }
+
+    public String getNPlusOneNodeAddress() {
+        String address;
+        int keyPointer = Driver.replica.getKey();
+
+        this.lock.readLock().lock();
+
+        int totalNodeCount = Math.min(this.N, this.currentNumberOfReplicas);
+        int nodeCount = 0;
+        do {
+            keyPointer = (keyPointer + 1) % this.maximumNumberOfReplicas;
+
+            if (this.replicas[keyPointer] != null) {
+                nodeCount++;
+            }
+        } while (nodeCount < totalNodeCount);
+
+        address = this.replicas[keyPointer].getAddress();
+
+        this.lock.readLock().unlock();
+
+        return address;
     }
 }

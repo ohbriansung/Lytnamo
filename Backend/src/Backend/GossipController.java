@@ -16,8 +16,14 @@ public class GossipController {
             JsonObject myMembership = Driver.ring.getMembership();
 
             JsonParser parser = new JsonParser();
-            JsonObject inMembership = parser.parse(request).getAsJsonObject();
-            Driver.ring.updateMembership(inMembership);
+            JsonObject body = parser.parse(request).getAsJsonObject();
+            Driver.ring.updateMembership(body);
+
+            if (body.get("hintedData") != null) {
+                System.out.println("[HintedData] restoring hinted data");
+                Driver.dataStorage.restoreHintedData(body.get("hintedData").getAsJsonArray());
+                System.out.println("[HintedData] hinted data restored");
+            }
 
             return myMembership.toString();
         } catch (JsonParseException e) {

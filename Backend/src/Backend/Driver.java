@@ -49,7 +49,7 @@ public class Driver {
                 Driver.replica.setSeed(true);
             } else if (args[i].equals("-c")) {
                 // coordinator
-                Driver.coordinator = args[++i ];
+                Driver.coordinator = args[++i];
                 coordinatorInit = true;
             }
         }
