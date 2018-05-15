@@ -28,7 +28,11 @@ public class MembershipController {
 
     @RequestMapping(value = "/deregister", method = RequestMethod.POST, produces = "application/json")
     public void deregister(@RequestBody Replica replica, HttpServletResponse response) {
+        int key = replica.getKey();
         Driver.ring.remove(replica);
+
+        TransferReplicates transfer = new TransferReplicates(key);
+        transfer.toRemappedReplica();
     }
 
     @RequestMapping(value = "/seeds", method = RequestMethod.GET, produces = "application/json")

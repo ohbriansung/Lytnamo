@@ -24,7 +24,7 @@ public class GatherReplicates {
     }
 
     public JsonArray start() {
-        int minimumSuccessRead = Driver.ring.getR() - 1;
+        int minimumSuccessRead = Math.min(Driver.ring.getR() - 1, Driver.ring.getCurrentNumberOfReplicas() - 1);
         CountDownLatch startSignal = new CountDownLatch(1);
         CountDownLatch finishSignal = new CountDownLatch(minimumSuccessRead);
         ResponseCounter responseCounter = new ResponseCounter(minimumSuccessRead);

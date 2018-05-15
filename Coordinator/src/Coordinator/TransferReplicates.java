@@ -18,7 +18,23 @@ public class TransferReplicates {
     }
 
     public void toNewReplica() {
-        List<JsonObject> details = Driver.ring.getTransferDetailForNewReplica(this.key);
+        List<JsonObject> details = Driver.ring.getTransferDetailForAddingReplica(this.key);
+        Thread[] tasks = new Thread[details.size()];
+
+        try {
+            for (int i = 0; i < details.size(); i++) {
+                tasks[i] = new Thread(new Send(details.get(i), this.uri));
+                tasks[i].start();
+            }
+
+            for (Thread task : tasks) {
+                task.join();
+            }
+        } catch (Exception ignored) {}
+    }
+
+    public void toRemappedReplica() {
+        List<JsonObject> details = Driver.ring.getTransferDetailForRemovingReplica(this.key);
         Thread[] tasks = new Thread[details.size()];
 
         try {

@@ -83,13 +83,13 @@ public class DataStorage {
         return data;
     }
 
-    public JsonArray getAndRemoveBuckets(int start, int end) {
+    public JsonArray getBucketsAndCheckRemove(int start, int end, boolean remove) {
         JsonArray buckets = new JsonArray();
 
         this.lock.writeLock().lock();
 
         do {
-            getAndRemoveIthBucket(buckets, start);
+            getIthBucketAndCheckRemove(buckets, start, remove);
             start = (start + 1) % Driver.ring.getMaximumNumberOfReplicas();
         } while (start != (end + 1) % Driver.ring.getMaximumNumberOfReplicas());
 
@@ -98,7 +98,7 @@ public class DataStorage {
         return buckets;
     }
 
-    private void getAndRemoveIthBucket(JsonArray buckets, int i) {
+    private void getIthBucketAndCheckRemove(JsonArray buckets, int i, boolean remove) {
         if (this.buckets.containsKey(i)) {
             JsonObject bucket = new JsonObject();
             bucket.addProperty("hashKey", i);
@@ -117,7 +117,10 @@ public class DataStorage {
 
             bucket.add("data", dataArray);
             buckets.add(bucket);
-            this.buckets.remove(i);
+
+            if (remove) {
+                this.buckets.remove(i);
+            }
         }
     }
 

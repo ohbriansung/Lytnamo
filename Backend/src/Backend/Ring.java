@@ -16,6 +16,7 @@ public class Ring {
     private volatile int N;
     private volatile int W;
     private volatile int R;
+    private int currentNumberOfReplicas;
 
     public Ring(int maximumNumberOfReplicas) {
         this.lock = new ReentrantReadWriteLock();
@@ -23,6 +24,7 @@ public class Ring {
         this.replicas = new Replica[maximumNumberOfReplicas];
         this.addLog = new HashMap<>();
         this.deleteLog = new HashSet<>();
+        this.currentNumberOfReplicas = 0;
     }
 
     public void initMembership(JsonArray seeds, Replica me) {
@@ -38,12 +40,14 @@ public class Ring {
 
             this.replicas[replica.getKey()] = replica;
             this.addLog.put(replica.getId(), replica.getKey());
+            this.currentNumberOfReplicas++;
             printAddInfo(replica);
         }
 
         if (this.replicas[me.getKey()] == null) {
             this.replicas[me.getKey()] = me;
             this.addLog.put(me.getId(), me.getKey());
+            this.currentNumberOfReplicas++;
             printAddInfo(me);
         }
     }
@@ -134,6 +138,7 @@ public class Ring {
 
                 this.replicas[newReplica.getKey()] = newReplica;
                 this.addLog.put(newReplica.getId(), newReplica.getKey());
+                this.currentNumberOfReplicas++;
                 printAddInfo(newReplica);
             }
         }
@@ -194,6 +199,7 @@ public class Ring {
 
         int key = this.addLog.get(id);
         this.replicas[key] = null;
+        this.currentNumberOfReplicas--;
         this.deleteLog.add(id);
         System.out.println("[Membership] Removed node " + id +
                 " from ring at key: " + key);
@@ -332,5 +338,17 @@ public class Ring {
 
     public int getMaximumNumberOfReplicas() {
         return this.maximumNumberOfReplicas;
+    }
+
+    public int getCurrentNumberOfReplicas() {
+        int num;
+
+        this.lock.readLock().lock();
+
+        num = this.currentNumberOfReplicas;
+
+        this.lock.readLock().unlock();
+
+        return num;
     }
 }

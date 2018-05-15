@@ -37,6 +37,7 @@ public class RequestController extends HttpRequest {
                 return null;
             }
         } catch (IOException ioe) {
+            ioe.printStackTrace();
             Driver.ring.remove(hostInfo[0]);
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             return null;

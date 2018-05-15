@@ -24,7 +24,7 @@ public class Replication {
     }
 
     public void start() {
-        int minimumSuccessWrite = Driver.ring.getW() - 1;
+        int minimumSuccessWrite = Math.min(Driver.ring.getW() - 1, Driver.ring.getCurrentNumberOfReplicas() - 1);
         CountDownLatch startSignal = new CountDownLatch(1);
         CountDownLatch finishSignal = new CountDownLatch(minimumSuccessWrite);
         List<String[]> preferenceList = Driver.ring.getPreferenceList(this.hashKey);

@@ -168,7 +168,7 @@ public class Ring {
         return this.maximumNumberOfReplicas;
     }
 
-    public List<JsonObject> getTransferDetailForNewReplica(int key) {
+    public List<JsonObject> getTransferDetailForAddingReplica(int key) {
         List<JsonObject> details = new ArrayList<>();
 
         this.lock.readLock().lock();
@@ -183,6 +183,7 @@ public class Ring {
                 range.add(0);
                 range.add(this.maximumNumberOfReplicas - 1);
                 detail.add("range", range);
+                detail.addProperty("remove", false);
 
                 details.add(detail);
             } else {
@@ -196,10 +197,38 @@ public class Ring {
 
                     JsonArray range = findRangeOfKey(this.N + 1, this.N, nextKey);
                     detail.add("range", range);
+                    detail.addProperty("remove", true);
 
                     details.add(detail);
                     preKey = nextKey;
                 }
+            }
+        }
+
+        this.lock.readLock().unlock();
+
+        return details;
+    }
+
+    public List<JsonObject> getTransferDetailForRemovingReplica(int key) {
+        List<JsonObject> details = new ArrayList<>();
+
+        this.lock.readLock().lock();
+
+        if (this.currentNumberOfReplicas >= this.N) {
+            for (int i = 0; i < this.N; i++) {
+                JsonObject detail = new JsonObject();
+                key = findNextKey(key);
+                detail.addProperty("to", this.replicas[key].getAddress());
+
+                int fromKey = findPreNthKey(1, key);
+                detail.addProperty("from", this.replicas[fromKey].getAddress());
+
+                JsonArray range = findRangeOfKey(this.N, this.N - 1, key);
+                detail.add("range", range);
+                detail.addProperty("remove", false);
+
+                details.add(detail);
             }
         }
 

@@ -20,7 +20,9 @@ public class TransferController extends HttpRequest {
             JsonObject detail = parseJson(request).getAsJsonObject();
             String url = detail.get("to").getAsString() + "/receiver";
             JsonArray range = detail.get("range").getAsJsonArray();
-            JsonArray buckets = Driver.dataStorage.getAndRemoveBuckets(range.get(0).getAsInt(), range.get(1).getAsInt());
+            boolean remove = detail.get("remove").getAsBoolean();
+            JsonArray buckets = Driver.dataStorage.getBucketsAndCheckRemove(range.get(0).getAsInt()
+                    , range.get(1).getAsInt(), remove);
 
             HttpURLConnection connection = doPostRequest(url, buckets);
             connection.getResponseCode();
