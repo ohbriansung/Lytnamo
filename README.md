@@ -801,10 +801,10 @@ $ java -jar ConcurrentTest.jar -t <target_address> -k <key> -d1 '<json_data_1>' 
 Just add a "demo" parameter in the write request body like this:
 <pre>
 {
-	"op": "add",
-	"item": "lytnamo",
-	"version": [],
-	"demo": true
+    "op": "add",
+    "item": "lytnamo",
+    "version": [],
+    "demo": true
 }
 </pre>
 
