@@ -50,6 +50,8 @@ Lytnamo provides enventual consistency, which allows for updates to be propagate
 
 ![Lytnamo adding/removing nodes](https://i.imgur.com/9VSSO0i.jpg)
 
+First, the new replica X registers itself to Membership Coordinator, and the coordinator automatically calculates the key (slot) on the ring for this new replica by finding the middle point of the largest space between other replica pairs. For example, space between A and B is the largest, then, X will be assign to the middle of that space.
+
 When a new replica X is added into the ring between A and B. Due to the allocation of key ranges to X, some existing nodes (X's N successors) no longer have to handle some of their keys and these nodes transfer data base on those keys to X and remove those data from their end. For this particular example: B transfers data with keys between (E, F], C transfers data with keys between (F, A], and D transfers data with keys between (A, X]. When a node is removed from the system, the reallocation of keys happens in a reverse process. Predecessors of B, C, and D will offer data within particular key range, but this reallocate operation will not remove data from sender. The notification of transfer is been initialized by the membership coordinator when a new node registers to it.
 
 ### Failure Handling
@@ -63,6 +65,12 @@ Temporary failure is dicovered during read/write operation. When a replica is te
 #### Permanent Failure
 
 Permanent failure is discovered during gossip operation. Lytnamo treats permanent failure as removing a node from the ring, handles as the operation described in the [Removing Storage Nodes](#readwrite-operation-and-replication) section.
+
+### Reconcile: Merge
+
+![Lytnamo reconcile](https://i.imgur.com/qO8UMCv.jpg)
+
+When a client receives multi versions of an object after read request, the client can indicate the version(s) it want to reconcile. Then, the replication will merge the items in the object and recalculate the vector clock, and pass the reconciled version to other replicas.
 
 ## APIs
 
