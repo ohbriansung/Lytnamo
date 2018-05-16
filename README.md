@@ -62,11 +62,120 @@ Temporary failure is dicovered during read/write operation. When a replica is te
 
 #### Permanent Failure
 
-Permanent failure is discovered during gossip operation. Lytnamo treats permanent failure as removing a node from the ring, handles as the operation described in the [Removing Storage Nodes](#adding/removing-storage-nodes) section.
+Permanent failure is discovered during gossip operation. Lytnamo treats permanent failure as removing a node from the ring, handles as the operation described in the [Removing Storage Nodes](#readwrite-operation-and-replication) section.
 
 ## APIs
 
 ### Membership Coordinator
+
+<details>
+<summary>POST /register</summary>
+
+Body:
+
+<pre>
+{
+    "id": "node_uuid",
+    "host": "host_address",
+    "port": "listening_port",
+    "seed": false,
+    "key": -1
+}
+</pre>
+
+Responses:
+
+<table>
+    <tr><td>Code</td><td>Description</td></tr>
+    <tr><td>200</td><td>Registration success<br/>
+        <pre>
+        {
+            "key": 190,
+            "capacity": 256,
+            "N": 3,
+            "W": 2,
+            "R": 2,
+            "seeds": [
+                {
+                    "id": "seed_uuid",
+                    "host": "seed_address",
+                    "port": "seed_listening_port",
+                    "seed": true,
+                    "key": 0
+                },
+                {
+                    "id": "seed_uuid",
+                    "host": "seed_address",
+                    "port": "seed_listening_port",
+                    "seed": true,
+                    "key": 127
+                }
+            ]
+        }
+        </pre>
+    </tr>
+    <tr><td>400</td><td>Unable to register node into the ring</tr>
+</table>
+</details>
+
+<details>
+<summary>POST /deregister</summary>
+
+Body:
+
+<pre>
+{
+    "id": "node_uuid",
+    "host": "host_address",
+    "port": "listening_port",
+    "seed": false,
+    "key": 190
+}
+</pre>
+
+Responses:
+
+<table>
+    <tr><td>Code</td><td>Description</td></tr>
+    <tr><td>200</td><td>Deregistration success</tr>
+</table>
+</details>
+
+<details>
+<summary>GET /seeds</summary>
+
+Responses:
+
+<table>
+    <tr><td>Code</td><td>Description</td></tr>
+    <tr><td>200</td><td>Registration success<br/>
+        <pre>
+        {
+            "capacity": 256,
+            "N": 3,
+            "W": 2,
+            "R": 2,
+            "seeds": [
+                {
+                    "id": "seed_uuid",
+                    "host": "seed_address",
+                    "port": "seed_listening_port",
+                    "seed": true,
+                    "key": 0
+                },
+                {
+                    "id": "seed_uuid",
+                    "host": "seed_address",
+                    "port": "seed_listening_port",
+                    "seed": true,
+                    "key": 127
+                }
+            ]
+        }
+        </pre>
+    </tr>
+</table>
+</details>
 
 ### Backend Replica
 
@@ -148,8 +257,8 @@ $ java -jar ConcurrentTest.jar -t <target_address> -k <key> -d1 '<json_data_1>' 
 * Implementing Replication.
 * Implementing Data Versioning.
 * Developing final testing framework.
-* Demonstration before Wednesday **5/16/18**.
-* Due Wednesday **5/16/18** 5pm.
+* Demonstration on Tuesday **5/15/18**.
+* Due Wednesday **5/16/18 5pm PDT**.
 
 ## References
 * \[1\] [University of San Francisco](https://www.usfca.edu/)
