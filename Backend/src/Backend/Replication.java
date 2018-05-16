@@ -72,6 +72,7 @@ public class Replication {
 
             try {
                 if (this.requestBody.get("demo") != null) {
+                    System.out.println("[Demo] block one replication");
                     throw new IOException();
                 } else {
                     HttpURLConnection connection = doPostRequest(this.url, this.requestBody);
@@ -81,6 +82,7 @@ public class Replication {
                     }
                 }
             } catch (IOException ignored) {
+                System.out.println("[Replication] a node is temporally unreachable");
                 sendHintedData(this.requestBody.deepCopy());
             } finally {
                 this.finishSignal.countDown();

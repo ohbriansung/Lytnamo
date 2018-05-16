@@ -54,14 +54,8 @@ public class Driver {
             }
         }
 
-        portInit = true;
-        coordinatorInit = true;
-        System.setProperty("server.port", "4444");
-        Driver.replica.setSeed(false);
-        Driver.coordinator = "localhost:8080";
-
         if (!portInit || !coordinatorInit) {
-            System.out.println("[System] Usage: java -jar backend.jar -p <port> " +
+            System.out.println("[System] Usage: java -jar Backend.jar -p <port> " +
                     "-s <seed_or_not> -c <coordinator_address>");
             throw new Exception();
         }

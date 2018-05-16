@@ -20,6 +20,7 @@ public class Gossip extends HttpRequest implements Runnable {
 
                 JsonArray hintedData = Driver.dataStorage.getHintedData(peerInfo[0]);
                 if (hintedData != null && hintedData.size() > 0) {
+                    System.out.println("[HintedData] sending hinted data along with gossip");
                     requestBody.add("hintedData", hintedData);
                 }
 

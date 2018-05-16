@@ -14,10 +14,11 @@ class TestServer(unittest.TestCase):
     def test_get(self):
         url = "http://" + self.address + "/get/" + self.key
         r = requests.get(url)
-        self.assertEqual(r.status_code, 200)
         print("sent to " + url)
-        print("response body:")
-        print(json.dumps(r.json(), indent=4, sort_keys=True))
+        print("status code:" + str(r.status_code))
+        if r.status_code == 200:
+            print("response body:")
+            print(json.dumps(r.json(), indent=4, sort_keys=True))
         print("------------------------------------------------------")
 
 args = None
