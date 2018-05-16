@@ -490,7 +490,227 @@ Responses:
 </table>
 </details>
 
+<details>
+<summary>POST /transfer</summary>
+
+Request body:
+
+<pre>
+{
+    "to": "node_address:port_copy_to",
+    "from": "node_address:port_copy_from",
+    "range": [0,255],
+    "remove": false
+}
+</pre>
+
+Responses:
+
+<table>
+    <tr><td>Code</td><td>Description</td></tr>
+    <tr><td>200</td><td>Transfer scuess</tr>
+    <tr><td>400</td><td>Unable to transfer or incorrect request body format</tr>
+</table>
+</details>
+
+<details>
+<summary>POST /receiver</summary>
+
+Request body:
+
+<pre>
+[
+    {
+        "hashKey": 6,
+        "data": [
+            {
+                "key": "brian",
+                "object": {
+                    "items": ["cs682"],
+                    "clocks": [
+                        {
+                            "node": "070568e8-3c04-46ef-b5d9-eaadf972ce41",
+                            "timestamp": 1
+                        }
+                    ],
+                    "replicate": true
+                }
+            }
+        ]
+    },
+    {
+        "hashKey": 97,
+        "data": [
+            {
+                "key": "a",
+                "object": {
+                    "items": ["testing","testing","testing","testing"],
+                    "clocks": [
+                        {
+                            "node": "070568e8-3c04-46ef-b5d9-eaadf972ce41",
+                            "timestamp": 4
+                        }
+                    ],
+                    "replicate": true
+                }
+            }
+        ]
+    }
+]
+</pre>
+
+Responses:
+
+<table>
+    <tr><td>Code</td><td>Description</td></tr>
+    <tr><td>200</td><td>Data restore scuess</tr>
+    <tr><td>400</td><td>Incorrect request body format</tr>
+</table>
+</details>
+
 ### Frontend
+
+<details>
+<summary>GET /get/{key}</summary>
+
+Responses:
+
+<table>
+    <tr><td>Code</td><td>Description</td></tr>
+    <tr><td>200</td><td>Object data<br/>
+<pre>
+[
+    {
+        "items": ["cs682","cs631"],
+        "clocks": [
+            {
+                "node": "070568e8-3c04-46ef-b5d9-eaadf972ce41",
+                "timestamp": 1
+            },
+            {
+                "node": "c41eafcf-046c-41d1-835f-f6ebcc2937ac",
+                "timestamp": 1
+            }
+        ]
+    },
+    {
+        "items": ["cs682","cs601"],
+        "clocks": [
+            {
+                "node": "070568e8-3c04-46ef-b5d9-eaadf972ce41",
+                "timestamp": 2
+            }
+        ]
+    }
+]
+</pre>
+    </tr>
+    <tr><td>307</td><td>Not responsible for this key, redirect to:<br/>
+<pre>
+{
+    "address": "correct_node_address:port"
+}
+</pre>
+    </tr>
+    <tr><td>400</td><td>No data</tr>
+</table>
+</details>
+
+<details>
+<summary>POST /put/{key}</summary>
+
+Request body:
+
+<pre>
+{
+    "op": "add",
+    "item": "cs631",
+    "version": [
+        {
+            "node": "070568e8-3c04-46ef-b5d9-eaadf972ce41",
+            "timestamp": 1
+        }
+    ]
+}
+</pre>
+
+Responses:
+
+<table>
+    <tr><td>Code</td><td>Description</td></tr>
+    <tr><td>200</td><td>Object is stored successfully</tr>
+    <tr><td>302</td><td>Version is too old, update with this version:<br/>
+<pre>
+[
+    {
+        "node": "070568e8-3c04-46ef-b5d9-eaadf972ce41",
+        "timestamp": 1
+    },
+    {
+        "node": "c41eafcf-046c-41d1-835f-f6ebcc2937ac",
+        "timestamp": 1
+    }
+]
+</pre>
+    </tr>
+    <tr><td>307</td><td>Not responsible for this key, redirect to:<br/>
+<pre>
+{
+    "address": "correct_node_address:port"
+}
+</pre>
+    </tr>
+    <tr><td>400</td><td>Write failed</tr>
+</table>
+</details>
+
+<details>
+<summary>POST /reconcile/merge/{key}</summary>
+
+Request body:
+
+<pre>
+[
+    {
+        "items": ["cs682","cs631"],
+        "clocks": [
+            {
+                "node": "070568e8-3c04-46ef-b5d9-eaadf972ce41",
+                "timestamp": 1
+            },
+            {
+                "node": "c41eafcf-046c-41d1-835f-f6ebcc2937ac",
+                "timestamp": 1
+            }
+        ]
+    },
+    {
+        "items": ["cs682","cs601"],
+        "clocks": [
+            {
+                "node": "070568e8-3c04-46ef-b5d9-eaadf972ce41",
+                "timestamp": 2
+            }
+        ]
+    }
+]
+</pre>
+
+Responses:
+
+<table>
+    <tr><td>Code</td><td>Description</td></tr>
+    <tr><td>200</td><td>Reconciliation scuess</tr>
+    <tr><td>307</td><td>Not responsible for this key, redirect to:<br/>
+<pre>
+{
+    "address": "correct_node_address:port"
+}
+</pre>
+    </tr>
+    <tr><td>400</td><td>Write failed</tr>
+</table>
+</details>
 
 ## Program and testing framework configuration
 
