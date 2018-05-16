@@ -44,7 +44,7 @@ Frontend send a read/write request to a backend replica, which is the replicatio
 
 ![Lytnamo data versioning](https://i.imgur.com/Jbt4IeN.jpg)
 
-Lytnamo provides enventual consistency, which allows for updates to be propagated to all replicas asynchronously. In order to capture causality between different versions of the same object, Lytnamo uses Vector Clock, whcih is effectively a list of (node, timestamp) pairs. Each object, which is the data of particular key, in the data storage holds a Vector Clock. A replication coordinator updates the Vector Clock of an object by increasing the timestamp of its pair. And it then passes the object with the Vector Clock to other replicas. For each write operation, the client needs to indicate the version it is updating. If it is updating an older version, the coordinator will start a read operation and return the latest version, so the client can update to the latest version later. For read operation, the client will always read from the latest version.
+Lytnamo provides enventual consistency, which allows for updates to be propagated to all replicas asynchronously. In order to capture causality between different versions of the same object, Lytnamo uses Vector Clock, whcih is effectively a list of (node, timestamp) pairs. Each object, which is the data of particular key, in the data storage holds a Vector Clock. A replication coordinator updates the Vector Clock of an object by increasing the timestamp of its pair. And it then passes the object with the Vector Clock to other replicas. For each write operation, the client needs to indicate the version it is updating. If it is updating an older version, the coordinator will start a read operation and return the latest version, so the client can update to with the latest version later. For read operation, the client will always read from the latest version.
 
 ### Adding/Removing Storage Nodes
 
@@ -88,7 +88,7 @@ Responses:
 <table>
     <tr><td>Code</td><td>Description</td></tr>
     <tr><td>200</td><td>Registration success<br/>
-        <pre>
+<pre>
 {
     "key": 190,
     "capacity": 256,
@@ -112,7 +112,7 @@ Responses:
         }
     ]
 }
-        </pre>
+</pre>
     </tr>
     <tr><td>400</td><td>Unable to register node into the ring</tr>
 </table>
@@ -148,7 +148,8 @@ Responses:
 
 <table>
     <tr><td>Code</td><td>Description</td></tr>
-    <tr><td>200</td><td>Registration success<br/><pre>
+    <tr><td>200</td><td>Registration success<br/>
+<pre>
 {
     "capacity": 256,
     "N": 3,
@@ -171,11 +172,323 @@ Responses:
         }
     ]
 }
-    </pre></tr>
+</pre>
+    </tr>
 </table>
 </details>
 
 ### Backend Replica
+
+<details>
+<summary>GET /gossip</summary>
+
+Responses:
+
+<table>
+    <tr><td>Code</td><td>Description</td></tr>
+    <tr><td>200</td><td>Add/Delete log and current replicas<br/>
+<pre>
+{
+    "add": ["node1_uuid", "node2_uuid", "node3_uuid"],
+    "delete": ["node3_uuid"],
+    "replicas": {
+        "node1_uuid":
+        {
+            "id": "node1_uuid",
+            "host": "node1_address",
+            "port": "node1_listening_port",
+            "seed": true,
+            "key": 0
+        },
+        "node2_uuid":
+        {
+            "id": "node2_uuid",
+            "host": "node2_address",
+            "port": "node2_listening_port",
+            "seed": true,
+            "key": 127
+        }
+    }
+}
+</pre>
+    </tr>
+</table>
+</details>
+
+<details>
+<summary>POST /gossip</summary>
+
+Request body:
+
+<pre>
+{
+    "add": ["node1_uuid", "node2_uuid", "node3_uuid"],
+    "delete": ["node3_uuid"],
+    "replicas": {
+        "node1_uuid":
+        {
+            "id": "node1_uuid",
+            "host": "node1_address",
+            "port": "node1_listening_port",
+            "seed": true,
+            "key": 0
+        },
+        "node2_uuid":
+        {
+            "id": "node2_uuid",
+            "host": "node2_address",
+            "port": "node2_listening_port",
+            "seed": true,
+            "key": 127
+        }
+    }
+}
+</pre>
+
+Responses:
+
+<table>
+    <tr><td>Code</td><td>Description</td></tr>
+    <tr><td>200</td><td>Add/Delete log and current replicas<br/>
+<pre>
+{
+    "add": ["node1_uuid", "node2_uuid"],
+    "delete": [],
+    "replicas": {
+        "node1_uuid":
+        {
+            "id": "node1_uuid",
+            "host": "node1_address",
+            "port": "node1_listening_port",
+            "seed": true,
+            "key": 0
+        },
+        "node2_uuid":
+        {
+            "id": "node2_uuid",
+            "host": "node2_address",
+            "port": "node2_listening_port",
+            "seed": true,
+            "key": 127
+        }
+    }
+}
+</pre>
+    </tr>
+    <tr><td>400</td><td>Incorrect request body format: json</tr>
+</table>
+</details>
+
+<details>
+<summary>GET /get/{hashKey}/{key}</summary>
+
+Responses:
+
+<table>
+    <tr><td>Code</td><td>Description</td></tr>
+    <tr><td>200</td><td>Object data<br/>
+<pre>
+[
+    {
+        "items": ["cs682","cs631"],
+        "clocks": [
+            {
+                "node": "070568e8-3c04-46ef-b5d9-eaadf972ce41",
+                "timestamp": 1
+            },
+            {
+                "node": "c41eafcf-046c-41d1-835f-f6ebcc2937ac",
+                "timestamp": 1
+            }
+        ]
+    },
+    {
+        "items": ["cs682","cs601"],
+        "clocks": [
+            {
+                "node": "070568e8-3c04-46ef-b5d9-eaadf972ce41",
+                "timestamp": 2
+            }
+        ]
+    }
+]
+</pre>
+    </tr>
+    <tr><td>307</td><td>Not responsible for this key, redirect to:<br/>
+<pre>
+{
+    "address": "correct_node_address:port"
+}
+</pre>
+    </tr>
+    <tr><td>400</td><td>No data</tr>
+</table>
+</details>
+
+<details>
+<summary>POST /put/{hashKey}/{key}</summary>
+
+Request body:
+
+<pre>
+{
+    "op": "add",
+    "item": "cs631",
+    "version": [
+        {
+            "node": "070568e8-3c04-46ef-b5d9-eaadf972ce41",
+            "timestamp": 1
+        }
+    ]
+}
+</pre>
+
+Responses:
+
+<table>
+    <tr><td>Code</td><td>Description</td></tr>
+    <tr><td>200</td><td>Object is stored successfully</tr>
+    <tr><td>302</td><td>Version is too old, update with this version:<br/>
+<pre>
+[
+    {
+        "node": "070568e8-3c04-46ef-b5d9-eaadf972ce41",
+        "timestamp": 1
+    },
+    {
+        "node": "c41eafcf-046c-41d1-835f-f6ebcc2937ac",
+        "timestamp": 1
+    }
+]
+</pre>
+    </tr>
+    <tr><td>307</td><td>Not responsible for this key, redirect to:<br/>
+<pre>
+{
+    "address": "correct_node_address:port"
+}
+</pre>
+    </tr>
+</table>
+</details>
+
+<details>
+<summary>GET /internal_get/{hashKey}/{key}</summary>
+
+Responses:
+
+<table>
+    <tr><td>Code</td><td>Description</td></tr>
+    <tr><td>200</td><td>Object data<br/>
+<pre>
+{
+    "items": ["cs682","cs601"],
+    "clocks": [
+        {
+            "node": "070568e8-3c04-46ef-b5d9-eaadf972ce41",
+            "timestamp": 2
+        }
+    ]
+}
+</pre>
+    </tr>
+    <tr><td>307</td><td>Not responsible for this key, redirect to:<br/>
+<pre>
+{
+    "address": "correct_node_address:port"
+}
+</pre>
+    </tr>
+    <tr><td>400</td><td>No data</tr>
+</table>
+</details>
+
+<details>
+<summary>POST /reconcile/merge/{hashKey}/{key}</summary>
+
+Request body:
+
+<pre>
+[
+    {
+        "items": ["cs682","cs631"],
+        "clocks": [
+            {
+                "node": "070568e8-3c04-46ef-b5d9-eaadf972ce41",
+                "timestamp": 1
+            },
+            {
+                "node": "c41eafcf-046c-41d1-835f-f6ebcc2937ac",
+                "timestamp": 1
+            }
+        ]
+    },
+    {
+        "items": ["cs682","cs601"],
+        "clocks": [
+            {
+                "node": "070568e8-3c04-46ef-b5d9-eaadf972ce41",
+                "timestamp": 2
+            }
+        ]
+    }
+]
+</pre>
+
+Responses:
+
+<table>
+    <tr><td>Code</td><td>Description</td></tr>
+    <tr><td>200</td><td>Reconciliation scuess</tr>
+    <tr><td>307</td><td>Not responsible for this key, redirect to:<br/>
+<pre>
+{
+    "address": "correct_node_address:port"
+}
+</pre>
+    </tr>
+</table>
+</details>
+
+<details>
+<summary>POST /hinted/put</summary>
+
+Request body:
+
+<pre>
+{
+    "id": "c41eafcf-046c-41d1-835f-f6ebcc2937ac",
+    "hashKey": 97,
+    "key": "brian",
+    "op": "add",
+    "item": "cs631",
+    "version": [
+        {
+            "node": "070568e8-3c04-46ef-b5d9-eaadf972ce41",
+            "timestamp": 1
+        }
+    ],
+    "clocks": [
+        {
+            "node": "070568e8-3c04-46ef-b5d9-eaadf972ce41",
+            "timestamp": 1
+        },
+        {
+            "node": "c41eafcf-046c-41d1-835f-f6ebcc2937ac",
+            "timestamp": 1
+        }
+    ],
+    "replicate": true
+}
+</pre>
+
+Responses:
+
+<table>
+    <tr><td>Code</td><td>Description</td></tr>
+    <tr><td>200</td><td>Hinted data is stored successfully</tr>
+</table>
+</details>
 
 ### Frontend
 

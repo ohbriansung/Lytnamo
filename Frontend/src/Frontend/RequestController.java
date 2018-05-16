@@ -24,11 +24,12 @@ public class RequestController extends HttpRequest {
             if (hostInfo[1] != null) {
                 String url = hostInfo[1] + "/get/" + hashKey + "/" + key;
                 HttpURLConnection connection = doGetRequest(url);
+                int statusCode = connection.getResponseCode();
 
-                response.setStatus(connection.getResponseCode());
-                if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
-                    JsonArray responseBody = parseResponse(connection).getAsJsonArray();
-                    return responseBody.toString();
+                response.setStatus(statusCode);
+                if (statusCode == HttpURLConnection.HTTP_OK ||
+                        statusCode == HttpServletResponse.SC_TEMPORARY_REDIRECT) {
+                    return parseResponse(connection).toString();
                 } else {
                     return null;
                 }
@@ -68,10 +69,8 @@ public class RequestController extends HttpRequest {
                 int statusCode = connection.getResponseCode();
 
                 response.setStatus(statusCode);
-
-                if (statusCode == HttpServletResponse.SC_FOUND) {
-                    return parseResponse(connection).toString();
-                } else if (statusCode == HttpServletResponse.SC_TEMPORARY_REDIRECT) {
+                if (statusCode == HttpServletResponse.SC_FOUND ||
+                        statusCode == HttpServletResponse.SC_TEMPORARY_REDIRECT) {
                     return parseResponse(connection).toString();
                 } else {
                     return null;
