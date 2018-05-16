@@ -71,7 +71,7 @@ Permanent failure is discovered during gossip operation. Lytnamo treats permanen
 <details>
 <summary>POST /register</summary>
 
-Body:
+Request body:
 
 <pre>
 {
@@ -89,29 +89,29 @@ Responses:
     <tr><td>Code</td><td>Description</td></tr>
     <tr><td>200</td><td>Registration success<br/>
         <pre>
+{
+    "key": 190,
+    "capacity": 256,
+    "N": 3,
+    "W": 2,
+    "R": 2,
+    "seeds": [
         {
-            "key": 190,
-            "capacity": 256,
-            "N": 3,
-            "W": 2,
-            "R": 2,
-            "seeds": [
-                {
-                    "id": "seed_uuid",
-                    "host": "seed_address",
-                    "port": "seed_listening_port",
-                    "seed": true,
-                    "key": 0
-                },
-                {
-                    "id": "seed_uuid",
-                    "host": "seed_address",
-                    "port": "seed_listening_port",
-                    "seed": true,
-                    "key": 127
-                }
-            ]
+            "id": "seed_uuid",
+            "host": "seed_address",
+            "port": "seed_listening_port",
+            "seed": true,
+            "key": 0
+        },
+        {
+            "id": "seed_uuid",
+            "host": "seed_address",
+            "port": "seed_listening_port",
+            "seed": true,
+            "key": 127
         }
+    ]
+}
         </pre>
     </tr>
     <tr><td>400</td><td>Unable to register node into the ring</tr>
@@ -121,7 +121,7 @@ Responses:
 <details>
 <summary>POST /deregister</summary>
 
-Body:
+Request body:
 
 <pre>
 {
@@ -148,32 +148,30 @@ Responses:
 
 <table>
     <tr><td>Code</td><td>Description</td></tr>
-    <tr><td>200</td><td>Registration success<br/>
-        <pre>
+    <tr><td>200</td><td>Registration success<br/><pre>
+{
+    "capacity": 256,
+    "N": 3,
+    "W": 2,
+    "R": 2,
+    "seeds": [
         {
-            "capacity": 256,
-            "N": 3,
-            "W": 2,
-            "R": 2,
-            "seeds": [
-                {
-                    "id": "seed_uuid",
-                    "host": "seed_address",
-                    "port": "seed_listening_port",
-                    "seed": true,
-                    "key": 0
-                },
-                {
-                    "id": "seed_uuid",
-                    "host": "seed_address",
-                    "port": "seed_listening_port",
-                    "seed": true,
-                    "key": 127
-                }
-            ]
+            "id": "seed_uuid",
+            "host": "seed_address",
+            "port": "seed_listening_port",
+            "seed": true,
+            "key": 0
+        },
+        {
+            "id": "seed_uuid",
+            "host": "seed_address",
+            "port": "seed_listening_port",
+            "seed": true,
+            "key": 127
         }
-        </pre>
-    </tr>
+    ]
+}
+    </pre></tr>
 </table>
 </details>
 
