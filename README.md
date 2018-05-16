@@ -68,12 +68,16 @@ Permanent failure is discovered during gossip operation. Lytnamo treats permanen
 
 ### Reconcile: Merge
 
-When a client receives multi versions of an object after read request, the client can indicate the version(s) it want to reconcile. Then, the replication will merge the items in the object and recalculate the vector clock, and pass the reconciled version to other replicas. For example:
-Two versions of data:
+When a client receives multi versions of an object after read request, the client can indicate the version(s) it want to reconcile. Then, the replication will merge the items in the object and recalculate the vector clock, and pass the reconciled version to other replicas. For example:<br/>
+Two versions of data:<br/>
+<pre>
 [{"items":["cs682", "cs631"], "clocks": [{"node": "n1", "timestamp": 2}]},
 {"items":["cs682", "cs601"], "clocks": [{"node": "n1", "timestamp": 1}, {"node": "n2", "timestamp": 1}]}]
-After reconciliation by node n1:
+</pre>
+After reconciliation by node n1:<br/>
+<pre>
 {"items":["cs682", "cs631", "cs601"], "clocks": [{"node": "n1", "timestamp": 3}, {"node": "n2", "timestamp": 1}]}
+</pre>
 (n1 calculates the maximum of each clock and increases its clock since it is the replication coordinator)
 
 ## APIs
