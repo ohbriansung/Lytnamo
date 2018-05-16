@@ -40,6 +40,8 @@ Instead of sending the request to the first node described above, frontend will 
 
 Frontend send a read/write request to a backend replica, which is the replication coordinator described above, after it receive the request from a client. The replication coordinator will check if itself is in the preference list of the key in the request. If it is not, it will redirect frontend to send the request to the correct replica. If it is, it will store the data into its data storage, and start the replication process to other replicas in the preference list. The replication coordinator will response to the fronend base on the configuration of W and R. That is, it will response after W replicas, including the coordinator itself, successfully store the data. The rest of the replication operations will continue asynchronously. Similarly, for read request, the coordinator requests and gathers data from all replicas in the preference list. If the coordinator ends up gathering multiple versions of the data, it returns all the versions it deems to be causally unrelated. The divergent versions can be reconciled by the client later. In addition, if we set the W or R value equals to N, then the system will be fully synchronous.
 
+Lytnamo provides two write operation: add item and remove item.
+
 ### Data Versioning
 
 ![Lytnamo data versioning](https://i.imgur.com/Jbt4IeN.jpg)
@@ -790,6 +792,21 @@ $ python3 test_redirect.py <address> <hashKey> <key>
 ```
 $ java -jar ConcurrentTest.jar -t <target_address> -k <key> -d1 '<json_data_1>' -d2 '<json_data_2>'
 ```
+
+</details>
+
+<details>
+<summary>Hinted Handoff Test</summary>
+
+Just add a "demo" parameter in the write request body like this:
+<pre>
+{
+	"op": "add",
+	"item": "lytnamo",
+	"version": [],
+	"demo": true
+}
+</pre>
 
 </details>
 
