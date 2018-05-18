@@ -22,23 +22,23 @@ A gossip-based protocol propagates membership changes and maintains an eventuall
 
 #### External Discovery
 
-The paper mentioned a technic to avoid logically partitioned. For example, two node A and B join into the ring, but they cannot discover each other. Base on the brief description in the paper, I made some assumptions and implemented a mechanism to achieve that technic. There will be two types of backend replica which is either a seed or not. A seed will be known to all nodes. Every time a new replica comes up, it will register itself to *Membership Coordinator*, the coordiator will assign a key to the new replica and add it to its ring. Then, it will response to the new replica with the list of all seed nodes. So the new replica will start gossip with seed nodes, and eventually, all nodes will know there is a new replica, which is fairly fast.
+The paper mentioned a technic to avoid logically partitioned. For example, two nodes A and B join into the ring, but they cannot discover each other. Base on the brief description in the paper, I made some assumptions and implemented a mechanism to achieve that technic. There are two types of backend replica in Lytnamo which is either a seed or not. A seed is known to all nodes. Every time a new replica comes up, it registers itself to *Membership Coordinator*, then the coordiator assigns a key to the new replica, and adds the new node into the ring. Then, the coordinator responses to the new replica with a list of all seed nodes. So the new replica can start gossip with seed nodes, seed nodes can add the new node into the membership, and eventually, all nodes can know there is a new replica, which is fairly fast.
 
 #### Failure Detection
 
-Backend replicas will detect failure of other nodes during gossip and read/write approach. There are two types of failure: temporary failure and permanent failure.
+Backend replicas detect failure of other nodes during gossip and read/write operations. There are two types of failure: temporary failure and permanent failure. We will discuss the details later in [Failure Handling](#failure-handling) section.
 
 ### Consistent Hashing
 
-Every read/write request contains a key parameter indicated in the uri. The frontend will assigned the request to a backend replica by hashing the key to yield its position on the ring, and then walking the ring clockwise to find the first node with a position larger than the key's position.
+Every read/write request contains a key parameter indicated in the uri. The frontend assigns the request to a backend replica by hashing the key to yield its position on the ring, and then walking the ring clockwise to find the first node with a position larger than the key's position.
 
 #### Load Balancing
 
-Instead of sending the request to the first node described above, frontend will randomly pick one of the node in the preference list to send the request, and the node that is responsible for the request is called *Replication Coordinator*.
+Instead of sending the request to the first node described above, frontend randomly picks one of the node in the preference list to send the request, and the node that is responsible for the request is called *Replication Coordinator*.
 
 ### Read/Write Operation and Replication
 
-Frontend send a read/write request to a backend replica, which is the replication coordinator described above, after it receive the request from a client. The replication coordinator will check if itself is in the preference list of the key in the request. If it is not, it will redirect frontend to send the request to the correct replica. If it is, it will store the data into its data storage, and start the replication process to other replicas in the preference list. The replication coordinator will response to the fronend base on the configuration of W and R. That is, it will response after W replicas, including the coordinator itself, successfully store the data. The rest of the replication operations will continue asynchronously. Similarly, for read request, the coordinator requests and gathers data from all replicas in the preference list. If the coordinator ends up gathering multiple versions of the data, it returns all the versions it deems to be causally unrelated. The divergent versions can be reconciled by the client later. In addition, if we set the W or R value equals to N, then the system will be fully synchronous.
+Frontend sends a read/write request to a backend replica, which is the replication coordinator described above. After it receives the request from a client, the replication coordinator checks if itself is in the preference list of the key in the request. If it is not, it redirects frontend to send the request to the correct replica. If it is, then it stores the data into its data storage, and start the replication process to other replicas in the preference list. The replication coordinator will response to the fronend base on the configuration of W and R. That is, it will response after W replicas, including the coordinator itself, successfully store the data. The rest of the replication operations will continue asynchronously. Similarly, for read request, the coordinator requests and gathers data from all replicas in the preference list. If the coordinator ends up gathering multiple versions of the data, it returns all the versions it deems to be causally unrelated. The divergent versions can be reconciled by the client later. In addition, if we set the W or R value equals to N, then the system will be fully synchronous.
 
 Lytnamo provides two write operations: add item and remove item.
 
@@ -62,7 +62,7 @@ When a new replica X is added into the ring between A and B. Due to the allocati
 
 ![Lytnamo hinted handoff](https://i.imgur.com/h3bIK3w.jpg)
 
-Temporary failure is dicovered during read/write operation. When a replica is temporary unreachable, the replication coordinator will add hinted information, and send the hinted data to the preference list's next replica (N + 1th node). When a replica receives the hinted data, it stores the data. The replica that received the hinted data will send the data along with the next gossip to the replica that supposes to store this data. The hinted data will then be send to a correct replica after the partition of the ring. If the gossip proceed successfully, the node that holds hinted data previously will remove it from its end.
+Temporary failure is dicovered during read/write operation. When a replica is temporary unreachable, the replication coordinator will add hinted information, and send the hinted data to the preference list's next replica (N + 1th node). When a replica receives the hinted data, it stores the data. The replica that received the hinted data will send the data along with the next gossip to the replica that supposes to store this data. The hinted data will then be sent to a correct replica after the partition of the ring. If the gossip proceed successfully, the node that holds hinted data previously will remove it from its end.
 
 #### Permanent Failure
 
@@ -70,7 +70,7 @@ Permanent failure is discovered during gossip operation. Lytnamo treats permanen
 
 ### Reconcile: Merge
 
-When a client receives multi versions of an object after read request, the client can indicate the version(s) it want to reconcile. Then, the replication will merge the items in the object and recalculate the vector clock, and pass the reconciled version to other replicas. For example:<br/>
+When a client receives multi versions of an object after read request, the client can indicate the version(s) it want to reconcile. Then, the replication coordinator will merge the items in the object and recalculate the vector clock, and pass the reconciled version to other replicas. For example:<br/>
 Two versions of data:<br/>
 <pre>
 [{"items":["cs682", "cs631"], "clocks": [{"node": "n1", "timestamp": 2}]},
