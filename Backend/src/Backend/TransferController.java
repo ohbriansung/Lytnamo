@@ -9,9 +9,21 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 
+/**
+ * TransferController class to handle transfer request.
+ */
 @RestController
 public class TransferController extends HttpRequest {
 
+    /**
+     * When receive a transfer request,
+     * get the snapshot of buckets data in the range indicated in the request body,
+     * and send the snapshot to the target replica with the address indicated in the request body.
+     * Remove all the data in the range if necessary.
+     *
+     * @param request
+     * @param response
+     */
     @RequestMapping(value = "/transfer", method = RequestMethod.POST, produces = "application/json")
     public void transfer(@RequestBody String request, HttpServletResponse response) {
         System.out.println("[Request] POST /transfer requestBody = " + request);
@@ -32,6 +44,13 @@ public class TransferController extends HttpRequest {
         }
     }
 
+    /**
+     * When receiver a receiver request,
+     * store the buckets data from the request body into local storage.
+     *
+     * @param request
+     * @param response
+     */
     @RequestMapping(value = "/receiver", method = RequestMethod.POST, produces = "application/json")
     public void receiver(@RequestBody String request, HttpServletResponse response) {
         System.out.println("[Request] POST /receiver requestBody = " + request);

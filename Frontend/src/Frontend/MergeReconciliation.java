@@ -6,8 +6,17 @@ import com.google.gson.JsonObject;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * MergeReconciliation class to reconcile and merge multi versions object.
+ */
 public class MergeReconciliation {
 
+    /**
+     * Merge multi versions object to the first version that indicated by the client.
+     *
+     * @param array
+     * @return JsonObject
+     */
     public JsonObject merge(JsonArray array) {
         JsonObject firstData = array.get(0).getAsJsonObject();
         JsonArray firstItem = firstData.get("items").getAsJsonArray();
@@ -29,6 +38,13 @@ public class MergeReconciliation {
         return merged;
     }
 
+    /**
+     * Calculate and merge the maximum timestamp of each clock.
+     *
+     * @param firstClock
+     * @param secondaryClock
+     * @return JsonArray
+     */
     private JsonArray mergeClock(JsonArray firstClock, JsonArray secondaryClock) {
         Map<String, Integer> clockMap = new HashMap<>();
 
@@ -61,6 +77,12 @@ public class MergeReconciliation {
         return merged;
     }
 
+    /**
+     * Merge the multi versions items into the first version and check for duplicates.
+     *
+     * @param firstItem
+     * @param secondaryItem
+     */
     private void mergeItem(JsonArray firstItem, JsonArray secondaryItem) {
         Map<String, Integer> itemMap = new HashMap<>();
 

@@ -8,14 +8,23 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 /**
+ * Replication class to handle replication.
+ *
  * Reference:
- * [CountDownLatch] https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/CountDownLatch.html
+ * https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/CountDownLatch.html
  */
 public class Replication {
     private final int hashKey;
     private final String key;
     private final JsonObject requestBody;
 
+    /**
+     * Replication constructor.
+     *
+     * @param hashKey
+     * @param key
+     * @param requestBody
+     */
     public Replication(int hashKey, String key, JsonObject requestBody) {
         this.hashKey = hashKey;
         this.key = key;
@@ -23,6 +32,13 @@ public class Replication {
         this.requestBody.addProperty("replicate", true);
     }
 
+    /**
+     * Start replication to all other replicas in the preference list.
+     * Use CountDownLatch to support concurrent write to other replicas,
+     * and count the minimum success write for response.
+     *
+     * If there is a demo parameter in the request body, block the final replication to demo the hinted handoff.
+     */
     public void start() {
         int minimumSuccessWrite = Math.min(Driver.ring.getW() - 1, Driver.ring.getCurrentNumberOfReplicas() - 1);
         CountDownLatch startSignal = new CountDownLatch(1);
@@ -48,6 +64,9 @@ public class Replication {
         } catch (InterruptedException ignored) {}
     }
 
+    /**
+     * Nested Send class to send the write request concurrently.
+     */
     private class Send extends HttpRequest implements Runnable {
         private final CountDownLatch startSignal;
         private final CountDownLatch finishSignal;
@@ -55,6 +74,15 @@ public class Replication {
         private final String url;
         private final JsonObject requestBody;
 
+        /**
+         * Send constructor.
+         *
+         * @param startSignal
+         * @param finishSignal
+         * @param hostInfo
+         * @param uri
+         * @param requestBody
+         */
         private Send(CountDownLatch startSignal, CountDownLatch finishSignal, String[] hostInfo
                 , String uri, JsonObject requestBody) {
             this.startSignal = startSignal;
@@ -64,6 +92,11 @@ public class Replication {
             this.requestBody = requestBody;
         }
 
+        /**
+         * Send write request and do the count down.
+         * If hit the number of minimum success write, then response.
+         * If the replica is unreachable, send hinted data to the N+1th replica.
+         */
         @Override
         public void run() {
             try {
@@ -89,6 +122,11 @@ public class Replication {
             }
         }
 
+        /**
+         * Add hints into the request body and send it to N+1th replica.
+         *
+         * @param hintedData
+         */
         private void sendHintedData(JsonObject hintedData) {
             String targetAddress = Driver.ring.getNPlusOneNodeAddress();
             String url = targetAddress + "/hinted/put";

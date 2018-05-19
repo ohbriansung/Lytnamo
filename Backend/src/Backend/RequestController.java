@@ -6,9 +6,23 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
 
+/**
+ * RequestController class to handle read/write request.
+ */
 @RestController
 public class RequestController extends HttpRequest {
 
+    /**
+     * Check if the current replica is responsible for the key.
+     * If not, redirect to the top replica of the preference list of the key.
+     * Start gathering process if don't need to redirect, and response with
+     * all versions gathered from other replicas in the preference list.
+     *
+     * @param hashKey
+     * @param key
+     * @param response
+     * @return String
+     */
     @RequestMapping(value = "/get/{hashKey}/{key}", method = RequestMethod.GET, produces = "application/json")
     public String get(@PathVariable("hashKey") int hashKey, @PathVariable("key") String key
             , HttpServletResponse response) {
@@ -31,6 +45,19 @@ public class RequestController extends HttpRequest {
         }
     }
 
+    /**
+     * Check if the current replica is responsible for the key.
+     * If not, redirect to the top replica of the preference list of the key.
+     * Store data into local storage if don't need to redirect.
+     * If the version the client is updating is not the latest version, reply the latest version.
+     * Start replication, if everything works fine, to other replicas in the preference list.
+     *
+     * @param hashKey
+     * @param key
+     * @param requestBody
+     * @param response
+     * @return String
+     */
     @RequestMapping(value = "/put/{hashKey}/{key}", method = RequestMethod.POST, produces = "application/json")
     public String put(@PathVariable("hashKey") int hashKey, @PathVariable("key") String key
             , @RequestBody String requestBody, HttpServletResponse response) {
@@ -66,10 +93,25 @@ public class RequestController extends HttpRequest {
         }
     }
 
+    /**
+     * Helper method to check if redirection is needed.
+     * If it is, return the redirect information.
+     *
+     * @param hashKey
+     * @return JsonObject
+     */
     private JsonObject redirect(int hashKey) {
         return Driver.ring.checkRedirect(hashKey);
     }
 
+    /**
+     * Return the object data when receiving internal get from replication coordinator.
+     *
+     * @param hashKey
+     * @param key
+     * @param response
+     * @return String
+     */
     @RequestMapping(value = "/internal_get/{hashKey}/{key}", method = RequestMethod.GET, produces = "application/json")
     public String internalGet(@PathVariable("hashKey") int hashKey, @PathVariable("key") String key
             , HttpServletResponse response) {
@@ -91,6 +133,18 @@ public class RequestController extends HttpRequest {
         }
     }
 
+    /**
+     * Check if the current replica is responsible for the key.
+     * If not, redirect to the top replica of the preference list of the key.
+     * Overwrite the current version of data if don't need to redirect.
+     * Send overwrite request to other replicas in the preference list.
+     *
+     * @param hashKey
+     * @param key
+     * @param requestBody
+     * @param response
+     * @return String
+     */
     @RequestMapping(value = "/reconcile/merge/{hashKey}/{key}", method = RequestMethod.POST, produces = "application/json")
     public String reconcile(@PathVariable("hashKey") int hashKey, @PathVariable("key") String key
             , @RequestBody String requestBody, HttpServletResponse response) {
@@ -119,6 +173,11 @@ public class RequestController extends HttpRequest {
         }
     }
 
+    /**
+     * Store hinted data into local storage.
+     *
+     * @param requestBody
+     */
     @RequestMapping(value = "/hinted/put", method = RequestMethod.POST, produces = "application/json")
     public void hintedPut(@RequestBody String requestBody) {
         System.out.println("[Request] POST /hinted/put requestBody = " +

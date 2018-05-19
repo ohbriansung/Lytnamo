@@ -7,8 +7,18 @@ import com.google.gson.JsonParseException;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 
+/**
+ * Gossip-base protocol to contact other backend replicas to maintain the membership.
+ */
 public class Gossip extends HttpRequest implements Runnable {
 
+    /**
+     * Randomly choose one backend replica in the ring to request for membership history per second.
+     * If there is hinted data for the backend replica that has been chosen, send the hinted data
+     * along with gossip request. Remove the hinted data if gossip proceed successfully.
+     *
+     * If a replica is unreachable remove it from the ring and info membership coordinator.
+     */
     @Override
     public void run() {
         while (Driver.alive) {
@@ -48,6 +58,12 @@ public class Gossip extends HttpRequest implements Runnable {
         }
     }
 
+    /**
+     * Remove a backend replica form the ring if it is unreachable.
+     * Send the deregister request to the membership coordinator.
+     *
+     * @param id
+     */
     private void remove(String id) {
         Replica toBeRemoved = Driver.ring.getReplica(id);
         Driver.ring.remove(id);

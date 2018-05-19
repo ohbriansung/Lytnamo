@@ -9,17 +9,32 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+/**
+ * MyObject class to store items and Vector Clock of every key.
+ */
 public class MyObject {
     private final ReentrantReadWriteLock lock;
     private final List<String> items;
     private final Map<String, Integer> vectorClock;
 
+    /**
+     * MyObject constructor to initialize the storage and the Vector Clock.
+     */
     public MyObject() {
         this.lock = new ReentrantReadWriteLock();
         this.items = new ArrayList<>();
         this.vectorClock = new HashMap<>();
     }
 
+    /**
+     * Check if the client is updating the latest version.
+     * If not, return the latest version for the client to retry the request later.
+     * It it is, add item to the storage and increase the Vector Clock.
+     *
+     * @param data
+     * @return JsonArray
+     * @throws NullPointerException
+     */
     public JsonArray add(JsonObject data) throws NullPointerException {
         JsonArray clocks = data.get("version").getAsJsonArray();
 
@@ -40,6 +55,15 @@ public class MyObject {
         return clocks;
     }
 
+    /**
+     * Check if the client is updating the latest version.
+     * If not, return the latest version for the client to retry the request later.
+     * It it is, remove the first item appears in the search from the storage and increase the Vector Clock.
+     *
+     * @param data
+     * @return JsonArray
+     * @throws NullPointerException
+     */
     public JsonArray remove(JsonObject data) throws NullPointerException {
         JsonArray clocks = data.get("version").getAsJsonArray();
 
@@ -60,6 +84,12 @@ public class MyObject {
         return clocks;
     }
 
+    /**
+     * Check if the version that the client is updating is the latest version.
+     *
+     * @param clocks
+     * @return boolean
+     */
     private boolean checkUpdateVersion(JsonArray clocks) {
         boolean result = true;
 
@@ -80,6 +110,11 @@ public class MyObject {
         return result;
     }
 
+    /**
+     * Check for causal ordering and store the replicate into storage.
+     *
+     * @param replicate
+     */
     public void storeReplicate(JsonObject replicate) {
         JsonArray clocks = replicate.get("clocks").getAsJsonArray();
         boolean causalOrdering;
@@ -133,6 +168,11 @@ public class MyObject {
         return result;
     }
 
+    /**
+     * Helper method for replication, overwrite the current vector clock.
+     *
+     * @param clocks
+     */
     private void overwriteClock(JsonArray clocks) {
         for (int i = 0; i < clocks.size(); i++) {
             JsonObject clock = clocks.get(i).getAsJsonObject();
@@ -143,6 +183,11 @@ public class MyObject {
         }
     }
 
+    /**
+     * Return the object in Json format with item and clock data.
+     *
+     * @return JsonObject
+     */
     public JsonObject toJson() {
         JsonObject obj = new JsonObject();
         JsonArray items = new JsonArray();
@@ -160,6 +205,11 @@ public class MyObject {
         return obj;
     }
 
+    /**
+     * Helper method to return current vector clock.
+     *
+     * @return JsonArray
+     */
     private JsonArray getClock() {
         JsonArray clocks = new JsonArray();
 
@@ -173,6 +223,9 @@ public class MyObject {
         return clocks;
     }
 
+    /**
+     * Helper method to check, initialize, and increase the timestamp of vector clock.
+     */
     private void incrementVectorClock() {
         if (!this.vectorClock.containsKey(Driver.replica.getId())) {
             this.vectorClock.put(Driver.replica.getId(), 0);
@@ -181,6 +234,11 @@ public class MyObject {
                 this.vectorClock.get(Driver.replica.getId()) + 1);
     }
 
+    /**
+     * Overwrite the whole object when reconciling.
+     *
+     * @param data
+     */
     public void overwrite(JsonObject data) {
         this.lock.writeLock().lock();
 

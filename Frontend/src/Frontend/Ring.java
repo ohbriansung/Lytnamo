@@ -6,8 +6,10 @@ import com.google.gson.JsonObject;
 import java.util.*;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+/**
+ * Ring class to store the detail of the backend replicas.
+ */
 public class Ring {
-
     private final ReentrantReadWriteLock lock;
     private final int maximumNumberOfReplicas;
     private final Replica[] replicas;
@@ -17,6 +19,11 @@ public class Ring {
     private volatile int W;
     private volatile int R;
 
+    /**
+     * Ring constructor to initialize the ring.
+     *
+     * @param maximumNumberOfReplicas
+     */
     public Ring(int maximumNumberOfReplicas) {
         this.lock = new ReentrantReadWriteLock();
         this.maximumNumberOfReplicas = maximumNumberOfReplicas;
@@ -25,6 +32,11 @@ public class Ring {
         this.deleteLog = new HashSet<>();
     }
 
+    /**
+     * Add seed nodes into the ring.
+     *
+     * @param seeds
+     */
     public void initMembership(JsonArray seeds) {
         for (int i = 0; i < seeds.size(); i++) {
             JsonObject seed = seeds.get(i).getAsJsonObject();
@@ -42,6 +54,11 @@ public class Ring {
         }
     }
 
+    /**
+     * Update the membership base on the membership history from other backend replicas.
+     *
+     * @param membership
+     */
     public void updateMembership(JsonObject membership) {
         Set<String> inAddLog = parseLog(membership.get("add").getAsJsonArray());
         Set<String> inDeleteLog = parseLog(membership.get("delete").getAsJsonArray());
@@ -55,6 +72,12 @@ public class Ring {
         this.lock.writeLock().unlock();
     }
 
+    /**
+     * Parse the JsonArray log into Set.
+     *
+     * @param logArray
+     * @return Set
+     */
     private Set<String> parseLog(JsonArray logArray) {
         Set<String> log = new HashSet<>();
 
@@ -65,6 +88,13 @@ public class Ring {
         return log;
     }
 
+    /**
+     * Add the backend replicas into the ring if it is not deleted.
+     *
+     * @param inAddLog
+     * @param inDeleteLog
+     * @param inReplicas
+     */
     private void addReplicas(Set<String> inAddLog, Set<String> inDeleteLog, JsonObject inReplicas) {
         Set<String> myAddLog = this.addLog.keySet();
         inAddLog.removeAll(myAddLog);
@@ -87,6 +117,11 @@ public class Ring {
         }
     }
 
+    /**
+     * Delete the backend replicas from the ring base on the delete log.
+     *
+     * @param inDeleteLog
+     */
     private void deleteReplicas(Set<String> inDeleteLog) {
         inDeleteLog.removeAll(this.deleteLog);
 
@@ -99,6 +134,11 @@ public class Ring {
         }
     }
 
+    /**
+     * Randomly select one backend replica from the ring for gossip.
+     *
+     * @return String[]
+     */
     public String[] getOnePeer() {
         String[] info = new String[2];
 
@@ -123,6 +163,11 @@ public class Ring {
         return info;
     }
 
+    /**
+     * Remove the node with particular id from the ring and log it.
+     *
+     * @param id
+     */
     public void remove(String id) {
         this.lock.writeLock().lock();
 
@@ -135,12 +180,17 @@ public class Ring {
         this.lock.writeLock().unlock();
     }
 
+    /**
+     * Return the capacity of the ring.
+     *
+     * @return int
+     */
     public int getMaxNumOfReplicas() {
         return this.maximumNumberOfReplicas;
     }
 
     /**
-     * Randomly choose a data coordinator from the preference list of a key.
+     * Randomly choose a replication coordinator from the preference list of a key.
      * That means any node in the preference could be the coordinator to replicate the data.
      *
      * @param hashKey
@@ -164,6 +214,12 @@ public class Ring {
         return hostInfo;
     }
 
+    /**
+     * Get the preference list of a key.
+     *
+     * @param hashKey
+     * @return List
+     */
     private List<Integer> getPreferenceList(int hashKey) {
         List<Integer> preferenceList  = new ArrayList<>();
         int startingPoint = hashKey;
@@ -181,19 +237,39 @@ public class Ring {
         return preferenceList;
     }
 
+    /**
+     * Helper method to print the adding information.
+     *
+     * @param replica
+     */
     private void printAddInfo(Replica replica) {
         System.out.println("[Membership] Added node " + replica.getId() +
                 " into ring at key: " + replica.getKey());
     }
 
+    /**
+     * N setter.
+     *
+     * @param N
+     */
     public void setN(int N) {
         this.N = N;
     }
 
+    /**
+     * W setter.
+     *
+     * @param W
+     */
     public void setW(int W) {
         this.W = W;
     }
 
+    /**
+     * R setter.
+     *
+     * @param R
+     */
     public void setR(int R) {
         this.R = R;
     }

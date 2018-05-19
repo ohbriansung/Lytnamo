@@ -7,9 +7,23 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
 
+/**
+ * GossipController to handle gossip request.
+ */
 @RestController
 public class GossipController {
 
+    /**
+     * Get the snapshot of current membership history.
+     * Parse the membership history in the request body from the other replica,
+     * and update the local membership with it.
+     * If there is hinted data inside the request body, restore it into local storage.
+     * Response with the snapshot of membership history of current replica.
+     *
+     * @param request
+     * @param response
+     * @return String
+     */
     @RequestMapping(value = "/gossip", method = RequestMethod.POST, produces = "application/json")
     public String gossip(@RequestBody String request, HttpServletResponse response) {
         try {
@@ -33,6 +47,11 @@ public class GossipController {
         }
     }
 
+    /**
+     * Simply response with the snapshot of current membership history.
+     *
+     * @return String
+     */
     @RequestMapping(value = "/gossip", method = RequestMethod.GET, produces = "application/json")
     public String gossip() {
         JsonObject myMembership = Driver.ring.getMembership();

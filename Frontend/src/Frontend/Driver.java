@@ -5,12 +5,34 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import java.net.InetAddress;
 
+/**
+ * Driver class to start the Frontend.
+ *
+ * @author Brian Sung
+ */
 @SpringBootApplication
 public class Driver {
+
+    /**
+     * Ring to store backend replicas.
+     */
     static Ring ring;
+
+    /**
+     * Membership Coordinator address.
+     */
     static String coordinator;
+
+    /**
+     * Server alive status.
+     */
     static boolean alive = true;
 
+    /**
+     * main method to start the server with Spring Boot.
+     *
+     * @param args
+     */
     public static void main(String[] args) {
         try {
             // initialize property
@@ -31,6 +53,12 @@ public class Driver {
         }
     }
 
+    /**
+     * Parse the pass-in arguments and initialize the server properties.
+     *
+     * @param args
+     * @throws Exception
+     */
     private static void initialize(String[] args) throws Exception {
         boolean portInit = false;
         boolean coordinatorInit = false;
@@ -46,7 +74,6 @@ public class Driver {
                 coordinatorInit = true;
             }
         }
-
 
         if (!portInit || !coordinatorInit) {
             System.out.println("[System] Usage: java -jar Frontend.jar -p <port> -c <coordinator_address>");

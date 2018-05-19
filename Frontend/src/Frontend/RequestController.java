@@ -1,7 +1,6 @@
 package Frontend;
 
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import org.springframework.web.bind.annotation.*;
@@ -10,9 +9,19 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 
+/**
+ * RequestController class to handle read/write request.
+ */
 @RestController
 public class RequestController extends HttpRequest {
 
+    /**
+     * get() interface to hash the key and pass the request to the coordinator in the preference list.
+     *
+     * @param key
+     * @param response
+     * @return String
+     */
     @RequestMapping(value = "/get/{key}", method = RequestMethod.GET, produces = "application/json")
     public String get(@PathVariable String key, HttpServletResponse response) {
         System.out.println("[Request] GET key = " + key);
@@ -45,6 +54,14 @@ public class RequestController extends HttpRequest {
         }
     }
 
+    /**
+     * put() interface to hash the key and pass the request to the coordinator in the preference list.
+     *
+     * @param key
+     * @param requestBody
+     * @param response
+     * @return String
+     */
     @RequestMapping(value = "/put/{key}", method = RequestMethod.POST, produces = "application/json")
     public String put(@PathVariable String key, @RequestBody String requestBody, HttpServletResponse response) {
         System.out.println("[Request] POST key = " + key + ", requestBody = " +
@@ -89,10 +106,13 @@ public class RequestController extends HttpRequest {
         }
     }
 
-    private int getHashKey(String key) {
-        return key.hashCode() % Driver.ring.getMaxNumOfReplicas();
-    }
-
+    /**
+     * reconcile() interface to merge and reconcile multi versions object and pass it to the coordinator.
+     *
+     * @param key
+     * @param requestBody
+     * @param response
+     */
     @RequestMapping(value = "/reconcile/merge/{key}", method = RequestMethod.POST, produces = "application/json")
     public void reconcile(@PathVariable String key, @RequestBody String requestBody, HttpServletResponse response) {
         System.out.println("[Request] POST key = " + key + ", requestBody = " +
@@ -125,5 +145,15 @@ public class RequestController extends HttpRequest {
             Driver.ring.remove(hostInfo[0]);
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
         }
+    }
+
+    /**
+     * Hash the key to fit in the ring.
+     *
+     * @param key
+     * @return int
+     */
+    private int getHashKey(String key) {
+        return key.hashCode() % Driver.ring.getMaxNumOfReplicas();
     }
 }

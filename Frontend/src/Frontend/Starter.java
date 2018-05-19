@@ -4,8 +4,16 @@ import com.google.gson.JsonObject;
 
 import java.net.HttpURLConnection;
 
+/**
+ * Starter class to prepare the server.
+ */
 public class Starter extends HttpRequest {
 
+    /**
+     * Get the seed nodes list from the membership coordinator and add them into the ring.
+     *
+     * @throws Exception
+     */
     public void initializeRing() throws Exception {
         String url = Driver.coordinator + "/seeds";
         HttpURLConnection connection = doGetRequest(url);
@@ -18,6 +26,11 @@ public class Starter extends HttpRequest {
         }
     }
 
+    /**
+     * Helper method to initialize the ring.
+     *
+     * @param responseBody
+     */
     private void initRing(JsonObject responseBody) {
         Driver.ring = new Ring(responseBody.get("capacity").getAsInt());
         Driver.ring.setN(responseBody.get("N").getAsInt());

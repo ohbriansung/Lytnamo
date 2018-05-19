@@ -5,11 +5,24 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import java.net.InetAddress;
 
+/**
+ * Driver class to start the membership coordinator.
+ *
+ * @author Brian Sung
+ */
 @SpringBootApplication
 public class Driver {
 
+    /**
+     * Ring to store backend replicas.
+     */
     static Ring ring;
 
+    /**
+     * main method to start the server with Spring Boot.
+     *
+     * @param args
+     */
     public static void main(String[] args) {
         try {
             // initialize property
@@ -23,6 +36,12 @@ public class Driver {
         }
     }
 
+    /**
+     * Parse the pass-in arguments and initialize the server properties.
+     *
+     * @param args
+     * @throws Exception
+     */
     private static void initialize(String[] args) throws Exception {
         boolean maxSlotAssigned = false;
         boolean checkN = false;

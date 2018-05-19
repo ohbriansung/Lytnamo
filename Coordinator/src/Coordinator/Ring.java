@@ -7,8 +7,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+/**
+ * Ring class to store the detail of the backend replicas.
+ */
 public class Ring {
-
     private final ReentrantReadWriteLock lock;
     private final int maximumNumberOfReplicas;
     private final Replica[] replicas;
@@ -17,10 +19,18 @@ public class Ring {
     private volatile int R;
     private int currentNumberOfReplicas;
 
+    /**
+     * Ring constructor with default 256 size if not specify the capacity.
+     */
     public Ring() {
         this(256);
     }
 
+    /**
+     * Ring constructor to initialize the ring.
+     *
+     * @param maximumNumberOfReplicas
+     */
     public Ring(int maximumNumberOfReplicas) {
         this.lock = new ReentrantReadWriteLock();
         this.maximumNumberOfReplicas = maximumNumberOfReplicas;
@@ -28,6 +38,13 @@ public class Ring {
         this.currentNumberOfReplicas = 0;
     }
 
+    /**
+     * Assign a key to the new replica and add it into the ring.
+     * Return the key assigned.
+     *
+     * @param replica
+     * @return int
+     */
     public int add(Replica replica) {
         int key = -1;
 
@@ -48,6 +65,11 @@ public class Ring {
         return key;
     }
 
+    /**
+     * Remove the replica from the ring.
+     *
+     * @param replica
+     */
     public void remove(Replica replica) {
         this.lock.writeLock().lock();
 
@@ -64,6 +86,13 @@ public class Ring {
         this.lock.writeLock().unlock();
     }
 
+    /**
+     * When there is no replica, assign 0.
+     * When there is more than one replica, find the largest gap between every pair of replicas,
+     * and assign the middle point of the gap.
+     *
+     * @return int
+     */
     private int assignKey() {
         int key = 0;
 
@@ -124,18 +153,38 @@ public class Ring {
         return key;
     }
 
+    /**
+     * N setter.
+     *
+     * @param N
+     */
     public void setN(int N) {
         this.N = N;
     }
 
+    /**
+     * W setter.
+     *
+     * @param W
+     */
     public void setW(int W) {
         this.W = W;
     }
 
+    /**
+     * R setter.
+     *
+     * @param R
+     */
     public void setR(int R) {
         this.R = R;
     }
 
+    /**
+     * Return the list of seed nodes and the ring properties.
+     *
+     * @return JsonObject
+     */
     public JsonObject getSeedsAndRingProperty() {
         JsonObject obj = new JsonObject();
 
@@ -152,6 +201,11 @@ public class Ring {
         return obj;
     }
 
+    /**
+     * Return the list of seed nodes.
+     *
+     * @return JsonArray
+     */
     private JsonArray getSeeds() {
         JsonArray seeds = new JsonArray();
 
@@ -164,10 +218,26 @@ public class Ring {
         return seeds;
     }
 
+    /**
+     * Return the capacity of the ring.
+     *
+     * @return int
+     */
     public int getMaximumNumberOfReplicas() {
         return this.maximumNumberOfReplicas;
     }
 
+    /**
+     * Get the transfer detail when new replica is added into the ring.
+     * The information includes the address of sender, the address of receiver,
+     * the range of buckets data should be transferred, and to remove or not.
+     *
+     * If the number of current replica is less then N,
+     * transfer all the data from the first replica, and do not remove.
+     *
+     * @param key
+     * @return List
+     */
     public List<JsonObject> getTransferDetailForAddingReplica(int key) {
         List<JsonObject> details = new ArrayList<>();
 
@@ -210,6 +280,14 @@ public class Ring {
         return details;
     }
 
+    /**
+     * Get the transfer detail when a replica is removed from the ring.
+     * The information includes the address of sender, the address of receiver,
+     * the range of buckets data should be transferred, and not to remove.
+     *
+     * @param key
+     * @return List
+     */
     public List<JsonObject> getTransferDetailForRemovingReplica(int key) {
         List<JsonObject> details = new ArrayList<>();
 
@@ -237,6 +315,12 @@ public class Ring {
         return details;
     }
 
+    /**
+     * Helper method to find the next replica location of a key.
+     *
+     * @param key
+     * @return int
+     */
     private int findNextKey(int key) {
         int next = key;
 
@@ -250,6 +334,16 @@ public class Ring {
         return next;
     }
 
+    /**
+     * Helper method to find the location range between two replicas counterclockwise of a key.
+     * Start means the starting point replica.
+     * End means the ending point replica.
+     *
+     * @param start
+     * @param end
+     * @param key
+     * @return JsonArray
+     */
     private JsonArray findRangeOfKey(int start, int end, int key) {
         JsonArray range = new JsonArray();
         range.add((findPreNthKey(start, key) + 1) % this.maximumNumberOfReplicas);
@@ -258,6 +352,13 @@ public class Ring {
         return range;
     }
 
+    /**
+     * Helper method to fine the counterclockwise Nth replica location of a key.
+     *
+     * @param n
+     * @param key
+     * @return int
+     */
     private int findPreNthKey(int n, int key) {
         int result = key;
         int visitedNode = 0;

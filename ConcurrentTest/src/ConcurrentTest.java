@@ -7,12 +7,22 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.concurrent.CountDownLatch;
 
+/**
+ * ConcurrentTest class to send concurrent write.
+ *
+ * @author Brian Sung
+ */
 public class ConcurrentTest {
     private static String targetAddress;
     private static String key;
     private static JsonObject data1;
     private static JsonObject data2;
 
+    /**
+     * main method to run the concurrent write test.
+     *
+     * @param args
+     */
     public static void main(String[] args) {
         try {
             parseArgs(args);
@@ -23,6 +33,12 @@ public class ConcurrentTest {
         }
     }
 
+    /**
+     * Parse the pass-in arguments and initialize the properties.
+     *
+     * @param args
+     * @throws Exception
+     */
     private static void parseArgs(String[] args) throws Exception {
         if (args.length < 8) {
             System.out.println("Usage: $ java -jar ConcurrentTest.jar -t <target_address> " +
@@ -56,6 +72,11 @@ public class ConcurrentTest {
         }
     }
 
+    /**
+     * Helper method to start the sending process, and response when both tests finish.
+     *
+     * @throws Exception
+     */
     private static void sendRequest() throws Exception {
         CountDownLatch startSignal = new CountDownLatch(1);
         CountDownLatch finishSignal = new CountDownLatch(2);
@@ -70,12 +91,24 @@ public class ConcurrentTest {
         } catch (InterruptedException ignored) {}
     }
 
+    /**
+     * Nested Send class to send the write request concurrently.
+     */
     private static class Send implements Runnable {
         private final CountDownLatch startSignal;
         private final CountDownLatch finishSignal;
         private final URL url;
         private final JsonObject requestBody;
 
+        /**
+         * Send constructor.
+         *
+         * @param startSignal
+         * @param finishSignal
+         * @param uri
+         * @param requestBody
+         * @throws Exception
+         */
         private Send(CountDownLatch startSignal, CountDownLatch finishSignal
                 , String uri, JsonObject requestBody) throws Exception {
             this.startSignal = startSignal;
@@ -84,6 +117,9 @@ public class ConcurrentTest {
             this.requestBody = requestBody;
         }
 
+        /**
+         * Initialize the connection and send the request concurrently when start signal.
+         */
         @Override
         public void run() {
             try {

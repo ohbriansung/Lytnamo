@@ -6,14 +6,44 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import java.net.InetAddress;
 import java.util.UUID;
 
+/**
+ * Driver class to start the backend replica.
+ *
+ * @author Brian Sung
+ */
 @SpringBootApplication
 public class Driver {
+
+    /**
+     * Replica properties.
+     */
     static final Replica replica = new Replica();
+
+    /**
+     * Data storage for objects.
+     */
     static final DataStorage dataStorage = new DataStorage();
+
+    /**
+     * Ring to store backend replicas.
+     */
     static Ring ring;
+
+    /**
+     * Membership Coordinator address.
+     */
     static String coordinator;
+
+    /**
+     * Server alive status.
+     */
     static boolean alive = true;
 
+    /**
+     * main method to start the server with Spring Boot.
+     *
+     * @param args
+     */
     public static void main(String[] args) {
         try {
             // initialize property
@@ -34,6 +64,12 @@ public class Driver {
         }
     }
 
+    /**
+     * Parse the pass-in arguments and initialize the server properties.
+     *
+     * @param args
+     * @throws Exception
+     */
     private static void initialize(String[] args) throws Exception {
         boolean portInit = false;
         boolean coordinatorInit = false;
