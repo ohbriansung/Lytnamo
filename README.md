@@ -816,13 +816,13 @@ Just add a "demo" parameter in the write request body like this:
 * Implementing Membership with gossip-base protocol.
 * Implementing Consistent Hashing to support adding backend services and maintain the services in the ring.
 * Developing testing framework for features above.
-* Checkpoint on Tuesday **5/8/18** to complete and demonstrate the implementations above.
+* Checkpoint on Tuesday 5/8/18 to complete and demonstrate the implementations above.
 * Implementing Failure Decetion and Handling (removing).
 * Implementing Replication.
 * Implementing Data Versioning.
 * Developing final testing framework.
-* Demonstration on Tuesday **5/15/18**.
-* Due Wednesday **5/16/18 5pm PDT**.
+* Demonstration on Tuesday 5/15/18.
+* Due Wednesday 5/16/18 5pm PDT.
 
 ## Author and Contributors
 
