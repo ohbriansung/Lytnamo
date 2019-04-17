@@ -2,7 +2,7 @@
 
 ## Introduction
 
-Lytnamo is a lite implementation of Amazon's Dynamo [\[2\]](#references). Most of the concepts are inspired by the paper issued by Amazon referenced in the end of this document. Lytnamo is a Key-value Distributed Storage System. The system contains with one membership coordinator to maintain membership and assign keys to replicas, one frontend as interface to receive requests from client, and several synchronized divergent backend replicas to store and replicate data.
+Lytnamo is a lite implementation of Amazon's Dynamo [\[1\]](#references). Most of the concepts are inspired by the paper issued by Amazon referenced in the end of this document. Lytnamo is a Key-value Distributed Storage System. The system contains with one membership coordinator to maintain membership and assign keys to replicas, one frontend as interface to receive requests from client, and several synchronized divergent backend replicas to store and replicate data.
 
 ## Architecture
 
@@ -824,19 +824,19 @@ Just add a "demo" parameter in the write request body like this:
 * Demonstration on Tuesday **5/15/18**.
 * Due Wednesday **5/16/18 5pm PDT**.
 
-## References
-* \[1\] [University of San Francisco](https://www.usfca.edu/)
-* \[2\] [Dynamo](http://s3.amazonaws.com/AllThingsDistributed/sosp/amazon-dynamo-sosp2007.pdf)
-* \[3\] [Spring Boot](https://projects.spring.io/spring-boot/)
-* \[4\] [Gson](https://mvnrepository.com/artifact/com.google.code.gson/gson/2.8.2)
-* \[5\] [Maven](https://maven.apache.org/guides/getting-started/maven-in-five-minutes.html)
-* \[6\] [Imgur](https://imgur.com/)
+## Author and Contributors
+
+0. Chien-Yu (Brian) Sung
+1. Dr. Rollins - [page](http://srollins.cs.usfca.edu/)
 
 ## Acknowledgment
 
-This is a course project developed at University of San Francisco. Only for academic or personal use, not for any commercial purpose.
+This project is for academic purposes only.
 
-## Author and contributors
-
-* **Brian Sung** - *Graduate student in department of Computer Science at University of San Francisco* - [LinkedIn](https://www.linkedin.com/in/ohbriansung/)
-* **Dr. Rollins** - *Professor in department of Computer Science at University of San Francisco* - [page](http://srollins.cs.usfca.edu/)
+## References
+0. [University of San Francisco](https://www.usfca.edu/)
+1. [Dynamo](http://s3.amazonaws.com/AllThingsDistributed/sosp/amazon-dynamo-sosp2007.pdf)
+1. [Spring Boot](https://projects.spring.io/spring-boot/)
+1. [Gson](https://mvnrepository.com/artifact/com.google.code.gson/gson/2.8.2)
+1. [Maven](https://maven.apache.org/guides/getting-started/maven-in-five-minutes.html)
+1. [Imgur](https://imgur.com/)
